@@ -37,6 +37,30 @@ export function getSandboxHTML(code) {
     <div id="root"></div>
     <script type="text/babel">
       (() => {
+        // 1. Intercept console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+          window.parent.postMessage({ source: 'battle-front-sandbox', type: 'log', payload: args.join(' ') }, '*');
+          originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+          window.parent.postMessage({ source: 'battle-front-sandbox', type: 'error', payload: args.join(' ') }, '*');
+          originalError.apply(console, args);
+        };
+
+        // 2. Catch runtime window errors (e.g., syntax errors, reference errors)
+        window.onerror = function(message, source, lineno, colno, error) {
+          window.parent.postMessage({ 
+            source: 'battle-front-sandbox', 
+            type: 'error', 
+            payload: \`[Line \${lineno}] \${message}\` 
+          }, '*');
+          return true; 
+        };
+
         try {
           ${cleanCode}
 

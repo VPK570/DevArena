@@ -10,15 +10,19 @@ import os
 import re
 
 import google.generativeai as genai
+from google.api_core.exceptions import ResourceExhausted
 
 from data.challenges import get_challenge, apply_difficulty_scaling, derive_verdict
 
 logger = logging.getLogger(__name__)
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # ── Configure Gemini on module load ─────────────────────────────────────────
 
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY", ""))
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-2.0-flash")
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
@@ -118,6 +122,9 @@ def evaluate_code(code: str, challenge_id: str) -> dict:
             last_error = exc
             logger.warning("JSON parse failed (attempt %d): %s", attempt + 1, exc)
             continue
+        except ResourceExhausted:
+            # Let ResourceExhausted bubble up to be caught by the router for a 429 status code
+            raise
         except Exception as exc:
             logger.exception("Gemini API error in evaluate_code: %s", exc)
             raise RuntimeError("AI evaluation failed. Please try again.") from exc
@@ -165,6 +172,8 @@ def generate_solution(challenge_id: str, user_code: str) -> dict:
     except ValueError as exc:
         logger.exception("JSON parse failed in generate_solution: %s", exc)
         raise RuntimeError("Failed to parse AI solution response.") from exc
+    except ResourceExhausted:
+        raise
     except Exception as exc:
         logger.exception("Gemini API error in generate_solution: %s", exc)
         raise RuntimeError("AI solution generation failed. Please try again.") from exc
@@ -207,6 +216,8 @@ def generate_hint(challenge_id: str, user_code: str) -> dict:
     except ValueError as exc:
         logger.exception("JSON parse failed in generate_hint: %s", exc)
         raise RuntimeError("Failed to parse AI hint response.") from exc
+    except ResourceExhausted:
+        raise
     except Exception as exc:
         logger.exception("Gemini API error in generate_hint: %s", exc)
         raise RuntimeError("AI hint generation failed. Please try again.") from exc
@@ -250,6 +261,8 @@ def explain_code(code: str, challenge_id: str) -> dict:
     except ValueError as exc:
         logger.exception("JSON parse failed in explain_code: %s", exc)
         raise RuntimeError("Failed to parse AI explanation response.") from exc
+    except ResourceExhausted:
+        raise
     except Exception as exc:
         logger.exception("Gemini API error in explain_code: %s", exc)
         raise RuntimeError("AI explanation failed. Please try again.") from exc

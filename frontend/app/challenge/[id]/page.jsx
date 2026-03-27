@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useRef } from 'react';
+import { use, useState, useRef, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import challenges from '@/lib/challenges';
@@ -24,11 +24,28 @@ export default function ChallengePage({ params }) {
   const [sandboxContent, setSandboxContent] = useState("");
   const [feedbackData, setFeedbackData] = useState(null);
   const [error, setError] = useState(null);
+  const [terminalLogs, setTerminalLogs] = useState([]);
   const iframeRef = useRef(null);
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      // Only listen to messages from our specific sandbox
+      if (event.data?.source === 'battle-front-sandbox') {
+        setTerminalLogs(prevLogs => [
+          ...prevLogs, 
+          { type: event.data.type, message: event.data.payload }
+        ]);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   const handleResetCode = () => setCode(challenge.starterCode);
 
   const handleRun = () => {
+    setTerminalLogs([]); 
     const html = getSandboxHTML(code);
     setSandboxContent(html);
     if (iframeRef.current) {
@@ -36,36 +53,64 @@ export default function ChallengePage({ params }) {
     }
   };
 
-  const handleSubmit = async () => {
+  const submitToOracle = async () => {
     setViewMode("loading");
     setIsRunningTimer(false);
     setError(null);
-
+    
     try {
-      const res = await fetch('/api/evaluate', {
+      const response = await fetch('http://localhost:8000/api/evaluate', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, challengeId: challenge.id })
+        body: JSON.stringify({ challengeId: challenge.id, code: code })
       });
 
-      if (!res.ok) throw new Error("Failed to evaluate code.");
+      // PATCH: Explicitly catch API limits and server crashes
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error("GEMINI_QUOTA_EXCEEDED: Free tier limit reached. Please wait 60s.");
+        } else if (response.status === 502) {
+          throw new Error("BAD_GATEWAY: AI service is currently unreachable.");
+        }
+        throw new Error(`SYSTEM_ERROR: Network returned ${response.status}`);
+      }
 
-      const data = await res.json();
+      // Only parse JSON if the response was successful
+      const data = await response.json();
       setFeedbackData(data);
       setViewMode("feedback");
-    } catch (err) {
-      setError("An error occurred while evaluating your code. Please try again.");
-      setViewMode("sandbox");
+
+    } catch (error) {
+      console.error("Oracle connection failed:", error);
+      
+      // PATCH: Send the error to your in-game terminal instead of crashing React
+      setTerminalLogs(prev => [...prev, { 
+        type: 'error', 
+        message: `[ORACLE_LINK_SEVERED] ${error.message}` 
+      }]);
+      
+      // PATCH: Revert to the sandbox view so the user isn't stuck on a loading screen
+      setViewMode("sandbox"); 
       setIsRunningTimer(true);
     }
   };
 
-  const handleTryAgain = () => {
+  const handleRematch = () => {
     setViewMode("sandbox");
     setFeedbackData(null);
-    setSeconds(0);
+    setTerminalLogs([]);
     setSandboxContent("");
+    setSeconds(0);
     setIsRunningTimer(true);
+  };
+
+  const handleAbort = () => {
+    const isConfirmed = window.confirm("WARNING: This will wipe your current code and reset to base parameters. Proceed?");
+    if (isConfirmed) {
+      setCode(challenge.starterCode);
+      setTerminalLogs([{ type: 'log', message: 'SYSTEM_RESET_INITIATED. Code restored to base parameters.' }]);
+      setSandboxContent("");
+    }
   };
 
   return (
@@ -127,7 +172,7 @@ export default function ChallengePage({ params }) {
            <FeedbackPanel 
              feedbackData={feedbackData} 
              timeTaken={seconds} 
-             onTryAgain={handleTryAgain} 
+             onTryAgain={handleRematch} 
            />
         ) : viewMode === "loading" ? (
            <div className="flex-1 flex flex-col items-center justify-center relative z-20">
@@ -156,6 +201,9 @@ export default function ChallengePage({ params }) {
               </div>
               <div className="flex-1"></div>
               <div className="flex gap-2">
+                <button onClick={handleAbort} className="text-[9px] font-label text-error hover:text-error-container uppercase transition-colors mr-4 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[10px]">cancel</span> ABORT
+                </button>
                 <button onClick={handleResetCode} className="text-[9px] font-label text-outline hover:text-white uppercase transition-colors">RESET_ROUTINE</button>
               </div>
             </div>
@@ -180,30 +228,46 @@ export default function ChallengePage({ params }) {
                   PREVIEW_EXECUTION
                 </button>
                 <button 
-                  onClick={handleSubmit}
-                  className="px-8 py-2 bg-primary-container text-on-primary-container font-headline text-[10px] font-bold tracking-[0.2em] shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:brightness-110 active:scale-95 transition-all uppercase"
+                  onClick={submitToOracle}
+                  disabled={viewMode === "loading"}
+                  className="px-8 py-2 bg-primary-container text-on-primary-container font-headline text-[10px] font-bold tracking-[0.2em] shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all uppercase"
                 >
-                  INITIATE_JUDGMENT
+                  {viewMode === "loading" ? "Awaiting Oracle..." : "INITIATE_JUDGMENT"}
                 </button>
               </div>
             </div>
             
             {/* Sandbox Bottom Area */}
-            <div className="h-[250px] bg-[#0E0E11] border-t border-outline-variant/20 flex flex-col shrink-0">
-              {sandboxContent ? (
-                <iframe
-                  ref={iframeRef}
-                  srcDoc={sandboxContent}
-                  title="code-sandbox"
-                  sandbox="allow-scripts"
-                  className="w-full h-full border-none"
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center opacity-20">
-                  <span className="material-symbols-outlined text-4xl mb-2">analytics</span>
-                  <p className="font-label text-[10px] tracking-widest uppercase">Output_Awaiting_Transmission</p>
-                </div>
-              )}
+            <div className="h-[250px] bg-[#0E0E11] border-t border-outline-variant/20 flex shrink-0">
+              {/* Iframe Box */}
+              <div className="w-1/2 h-full border-r border-outline-variant/20 flex flex-col">
+                {sandboxContent ? (
+                  <iframe
+                    ref={iframeRef}
+                    srcDoc={sandboxContent}
+                    title="code-sandbox"
+                    sandbox="allow-scripts"
+                    className="w-full h-full border-none"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center opacity-20">
+                    <span className="material-symbols-outlined text-4xl mb-2">analytics</span>
+                    <p className="font-label text-[10px] tracking-widest uppercase">Sandbox_Offline</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Terminal Logs */}
+              <div className="w-1/2 h-full bg-black p-4 font-body text-[10px] overflow-y-auto">
+                <div className="text-[#00F0FF]/50 text-[10px] mb-2 uppercase tracking-widest font-headline border-b border-[#00F0FF]/20 pb-1">TERMINAL_OUT</div>
+                {terminalLogs.length === 0 && <span className="text-outline/50">Waiting for execution...</span>}
+                {terminalLogs.map((log, index) => (
+                  <div key={index} className={`${log.type === 'error' ? 'text-error' : 'text-primary-container'} mb-1`}>
+                    <span className="opacity-50 mr-2">{'>'}</span> 
+                    {log.message}
+                  </div>
+                ))}
+              </div>
             </div>
           </>
         )}

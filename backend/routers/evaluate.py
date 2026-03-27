@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter, HTTPException
+from google.api_core.exceptions import ResourceExhausted
 
 from models.schemas import EvaluateRequest, EvaluateResponse, ErrorResponse
 from data.challenges import get_challenge
@@ -15,6 +16,7 @@ router = APIRouter()
     response_model=EvaluateResponse,
     responses={
         400: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
         502: {"model": ErrorResponse},
     },
@@ -32,6 +34,13 @@ async def evaluate(request: EvaluateRequest):
     try:
         result = evaluate_code(request.code, request.challengeId)
         return EvaluateResponse(**result)
+    except ResourceExhausted as exc:
+        # PATCH: Catch the specific 429 Quota Exceeded error
+        logger.warning("⚠️ Quota Exceeded: %s", exc)
+        raise HTTPException(
+            status_code=429,
+            detail={"error": "GEMINI_QUOTA_EXCEEDED", "detail": "Gemini API quota exceeded. Please wait 60s."},
+        )
     except RuntimeError as exc:
         logger.exception("Gemini evaluation failed for %s", request.challengeId)
         raise HTTPException(
@@ -42,5 +51,5 @@ async def evaluate(request: EvaluateRequest):
         logger.exception("Unexpected error in /api/evaluate")
         raise HTTPException(
             status_code=500,
-            detail={"error": "Internal server error", "detail": "An unexpected error occurred"},
+            detail={"error": "INTERNAL_SERVER_ERROR", "detail": str(exc)},
         )
