@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BATTLE-FRONT // VERDICT</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed": "#002022",
+                        "surface-tint": "#00dbe9",
+                        "on-error-container": "#ffdad6",
+                        "on-primary": "#00363a",
+                        "on-background": "#e5e1e5",
+                        "outline-variant": "#3b494b",
+                        "tertiary-fixed": "#ffdad8",
+                        "on-tertiary-fixed-variant": "#92001e",
+                        "surface-container-low": "#1c1b1e",
+                        "on-surface-variant": "#b9cacb",
+                        "surface-container-high": "#2a2a2d",
+                        "on-secondary": "#2b3043",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#dde1fb",
+                        "on-primary-fixed-variant": "#004f54",
+                        "inverse-primary": "#006970",
+                        "surface-container-highest": "#353438",
+                        "on-secondary-fixed-variant": "#41465a",
+                        "on-secondary-fixed": "#161b2d",
+                        "surface-container-lowest": "#0e0e11",
+                        "on-tertiary-container": "#c0002b",
+                        "primary-fixed": "#7df4ff",
+                        "primary-container": "#00f0ff",
+                        "on-secondary-container": "#b3b7cf",
+                        "secondary-container": "#43485c",
+                        "on-surface": "#e5e1e5",
+                        "error-container": "#93000a",
+                        "surface-bright": "#39393c",
+                        "inverse-on-surface": "#313033",
+                        "secondary": "#c1c5de",
+                        "outline": "#849495",
+                        "surface": "#131316",
+                        "surface-variant": "#353438",
+                        "inverse-surface": "#e5e1e5",
+                        "on-primary-container": "#006970",
+                        "background": "#131316",
+                        "secondary-fixed-dim": "#c1c5de",
+                        "primary": "#dbfcff",
+                        "surface-container": "#201f22",
+                        "tertiary": "#fff4f3",
+                        "primary-fixed-dim": "#00dbe9",
+                        "on-tertiary": "#680012",
+                        "surface-dim": "#131316",
+                        "tertiary-container": "#ffcecc",
+                        "tertiary-fixed-dim": "#ffb3b2",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed": "#410008"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Mono"],
+                        "body": ["JetBrains Mono"],
+                        "label": ["Space Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scanline {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+        }
+        .glass-overlay {
+            backdrop-filter: blur(12px);
+            background: rgba(53, 52, 56, 0.5);
+        }
+        body {
+            background-color: #0E0E11;
+            color: #e5e1e5;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .text-neon {
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-hidden">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 h-14 bg-[#131316] border-b border-[#00F0FF]/15 z-50">
+<div class="text-xl font-bold tracking-widest text-[#00F0FF] font-headline uppercase">BATTLE-FRONT</div>
+<nav class="hidden md:flex gap-8">
+<a class="font-headline text-xs tracking-[0.1em] text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 py-1" href="#">TERMINAL</a>
+<a class="font-headline text-xs tracking-[0.1em] text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 py-1" href="#">STREAK</a>
+<a class="font-headline text-xs tracking-[0.1em] text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 py-1" href="#">MARKET</a>
+</nav>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#B3B7CF] cursor-pointer hover:text-[#00F0FF]">sensors</span>
+<span class="material-symbols-outlined text-[#B3B7CF] cursor-pointer hover:text-[#00F0FF]">settings_input_component</span>
+<div class="h-8 w-8 bg-[#00F0FF]/20 border border-[#00F0FF]/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#00F0FF] text-sm">terminal</span>
+</div>
+</div>
+</header>
+<div class="flex flex-1 relative">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-14 h-[calc(100vh-3.5rem)] flex flex-col p-4 z-40 bg-[#0E0E11] border-r border-[#00F0FF]/15 w-64 hidden lg:flex">
+<div class="mb-8 p-4 bg-[#131316] border-l-2 border-[#00F0FF]">
+<div class="text-xs font-headline tracking-widest text-[#B3B7CF] mb-1">OPERATOR_01</div>
+<div class="text-[10px] text-[#00F0FF] font-bold">RANK: ELITE_SQUAD</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:bg-[#00F0FF]/5 hover:text-[#00F0FF] p-2 transition-colors duration-75" href="#">
+<span class="material-symbols-outlined text-sm">grid_view</span>
+<span class="font-headline text-[0.75rem] tracking-wider">DASHBOARD</span>
+</a>
+<a class="flex items-center gap-3 bg-[#00F0FF] text-[#131316] font-bold p-2 mb-1" href="#">
+<span class="material-symbols-outlined text-sm">leaderboard</span>
+<span class="font-headline text-[0.75rem] tracking-wider">RANKINGS</span>
+</a>
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:bg-[#00F0FF]/5 hover:text-[#00F0FF] p-2 transition-colors duration-75" href="#">
+<span class="material-symbols-outlined text-sm">rebase_edit</span>
+<span class="font-headline text-[0.75rem] tracking-wider">CHALLENGES</span>
+</a>
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:bg-[#00F0FF]/5 hover:text-[#00F0FF] p-2 transition-colors duration-75" href="#">
+<span class="material-symbols-outlined text-sm">videocam</span>
+<span class="font-headline text-[0.75rem] tracking-wider">STREAMS</span>
+</a>
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:bg-[#00F0FF]/5 hover:text-[#00F0FF] p-2 transition-colors duration-75" href="#">
+<span class="material-symbols-outlined text-sm">description</span>
+<span class="font-headline text-[0.75rem] tracking-wider">SYSTEM_LOG</span>
+</a>
+</nav>
+<button class="mt-4 w-full bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-[#00F0FF] font-headline text-xs py-3 hover:bg-[#00F0FF] hover:text-[#131316] transition-all">
+                EXECUTE_ROUTINE
+            </button>
+<div class="mt-auto pt-4 space-y-1 border-t border-[#00F0FF]/10">
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:text-[#00F0FF] p-2 text-xs" href="#">
+<span class="material-symbols-outlined text-sm">code</span>
+<span class="font-headline">TERMINAL_OUT</span>
+</a>
+<a class="flex items-center gap-3 text-tertiary-container hover:text-white p-2 text-xs" href="#">
+<span class="material-symbols-outlined text-sm">cancel</span>
+<span class="font-headline">ABORT</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 lg:ml-64 bg-[#131316] relative overflow-y-auto">
+<div class="scanline absolute inset-0 opacity-10"></div>
+<div class="p-8 lg:p-12 max-w-7xl mx-auto flex flex-col gap-8 relative z-10">
+<!-- Verdict Hero Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-px bg-[#00F0FF]/15">
+<!-- Left Pane: Victory Summary -->
+<div class="bg-[#0E0E11] p-10 flex flex-col justify-between min-h-[500px]">
+<div>
+<div class="flex items-center gap-4 mb-2">
+<span class="text-[#00F0FF] font-headline text-sm tracking-widest border border-[#00F0FF]/30 px-2 py-1 bg-[#00F0FF]/5">TRANSMISSION_STABLE</span>
+<span class="h-px flex-1 bg-[#00F0FF]/20"></span>
+</div>
+<h1 class="text-8xl font-black font-headline tracking-tighter text-[#00F0FF] leading-none mb-4">VICTORY</h1>
+<p class="text-on-secondary-container font-headline text-lg tracking-widest uppercase mb-12">Flawless Victory</p>
+<div class="grid grid-cols-2 gap-8">
+<div class="border-l-2 border-[#00F0FF] pl-4">
+<div class="text-[10px] font-headline text-[#B3B7CF] uppercase mb-1">Runtime</div>
+<div class="text-3xl font-bold text-[#00F0FF]">14ms</div>
+</div>
+<div class="border-l-2 border-[#00F0FF] pl-4">
+<div class="text-[10px] font-headline text-[#B3B7CF] uppercase mb-1">Efficiency</div>
+<div class="text-3xl font-bold text-[#00F0FF]">98th %</div>
+</div>
+<div class="border-l-2 border-[#00F0FF] pl-4">
+<div class="text-[10px] font-headline text-[#B3B7CF] uppercase mb-1">ELO Delta</div>
+<div class="text-3xl font-bold text-[#00F0FF] flex items-center gap-2">
+                                        +24
+                                        <span class="material-symbols-outlined text-sm">trending_up</span>
+</div>
+</div>
+<div class="border-l-2 border-[#00F0FF] pl-4">
+<div class="text-[10px] font-headline text-[#B3B7CF] uppercase mb-1">Complexity</div>
+<div class="text-3xl font-bold text-[#00F0FF]">O(n)</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 mt-12">
+<button class="bg-[#00F0FF] text-[#131316] font-headline font-bold px-8 py-4 flex items-center justify-center gap-3 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">restart_alt</span>
+                                REMATCH
+                            </button>
+<button class="bg-[#131316] border border-[#00F0FF]/40 text-[#00F0FF] font-headline font-bold px-8 py-4 flex items-center justify-center gap-3 hover:bg-[#00F0FF]/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined">logout</span>
+                                RETURN_TO_BASE
+                            </button>
+</div>
+</div>
+<!-- Right Pane: Oracle Analysis -->
+<div class="bg-[#131316] flex flex-col border-l border-[#00F0FF]/15">
+<div class="p-6 border-b border-[#00F0FF]/15 flex justify-between items-center bg-[#1c1b1e]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#00F0FF]">psychology</span>
+<h2 class="font-headline text-xs tracking-widest text-white">ORACLE_ANALYSIS_V4.2</h2>
+</div>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+<div class="w-2 h-2 rounded-full bg-[#00F0FF]/30"></div>
+</div>
+</div>
+<div class="flex-1 p-6 font-body text-sm overflow-y-auto bg-[#0E0E11]/80 space-y-4">
+<div class="p-4 border-l-4 border-[#00F0FF] bg-[#00F0FF]/5 text-[#B3B7CF] leading-relaxed italic">
+                                "Big-O O(n) achieved, consider bitwise operations for minor gain. Memory allocation was stable across all input vectors."
+                            </div>
+<div class="space-y-1 text-[#B3B7CF]">
+<div class="flex gap-4 opacity-50"><span class="w-6 text-right">01</span><span>const solve = (input) =&gt; {</span></div>
+<div class="flex gap-4"><span class="w-6 text-right opacity-50">02</span><span class="text-[#00F0FF]">  // Optimization: Pre-allocated buffer</span></div>
+<div class="flex gap-4"><span class="w-6 text-right opacity-50">03</span><span>  let buffer = new Uint32Array(input.length);</span></div>
+<div class="flex gap-4"><span class="w-6 text-right opacity-50">04</span><span>  for(let i = 0; i &lt; input.length; i++) {</span></div>
+<div class="flex gap-4 bg-primary-container/10 border-r-2 border-[#00F0FF]"><span class="w-6 text-right opacity-50">05</span><span>    buffer[i] = input[i] &lt;&lt; 1; <span class="text-[#00F0FF] ml-4 font-bold">// BITWISE_GAIN: +0.2ms</span></span></div>
+<div class="flex gap-4"><span class="w-6 text-right opacity-50">06</span><span>  }</span></div>
+<div class="flex gap-4"><span class="w-6 text-right opacity-50">07</span><span>  return buffer;</span></div>
+<div class="flex gap-4 opacity-50"><span class="w-6 text-right">08</span><span>};</span></div>
+</div>
+<div class="pt-8">
+<h3 class="font-headline text-[10px] text-[#00F0FF] mb-4 tracking-[0.2em] uppercase">Test Case Breakdown</h3>
+<div class="space-y-2">
+<div class="flex items-center justify-between p-3 bg-[#1c1b1e] border-r-2 border-[#00F0FF]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-xs text-[#00F0FF]">check_circle</span>
+<span class="text-xs uppercase">Small Array (10^2)</span>
+</div>
+<span class="text-[10px] text-[#B3B7CF]">0.2ms</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-[#1c1b1e] border-r-2 border-[#00F0FF]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-xs text-[#00F0FF]">check_circle</span>
+<span class="text-xs uppercase">Large Dataset (10^6)</span>
+</div>
+<span class="text-[10px] text-[#B3B7CF]">4.8ms</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-[#1c1b1e] border-r-2 border-[#00F0FF]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-xs text-[#00F0FF]">check_circle</span>
+<span class="text-xs uppercase">Edge: Null Values</span>
+</div>
+<span class="text-[10px] text-[#B3B7CF]">0.1ms</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Data Grid (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-high p-6 border-t-2 border-[#00F0FF]/30">
+<div class="text-[10px] font-headline text-[#B3B7CF] mb-4 uppercase tracking-widest">Global Standings</div>
+<div class="flex items-end justify-between">
+<div class="text-4xl font-bold font-headline">#142</div>
+<div class="text-xs text-[#00F0FF] mb-1">TOP 0.5%</div>
+</div>
+<div class="w-full bg-[#0E0E11] h-1 mt-4 relative">
+<div class="absolute inset-y-0 left-0 bg-[#00F0FF] w-[98%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-high p-6 border-t-2 border-tertiary-container/30">
+<div class="text-[10px] font-headline text-[#B3B7CF] mb-4 uppercase tracking-widest">Network Latency</div>
+<div class="flex items-end justify-between">
+<div class="text-4xl font-bold font-headline">22ms</div>
+<div class="text-xs text-tertiary-container mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">signal_cellular_alt</span>
+                                STABLE
+                            </div>
+</div>
+<div class="flex gap-1 mt-4">
+<div class="h-2 flex-1 bg-tertiary-container"></div>
+<div class="h-2 flex-1 bg-tertiary-container"></div>
+<div class="h-2 flex-1 bg-[#0E0E11]"></div>
+<div class="h-2 flex-1 bg-[#0E0E11]"></div>
+<div class="h-2 flex-1 bg-[#0E0E11]"></div>
+</div>
+</div>
+<div class="bg-surface-container-high p-6 border-t-2 border-[#00F0FF]/30">
+<div class="text-[10px] font-headline text-[#B3B7CF] mb-4 uppercase tracking-widest">Session Rewards</div>
+<div class="flex items-center gap-4">
+<div class="p-3 bg-[#00F0FF]/10 border border-[#00F0FF]/30">
+<span class="material-symbols-outlined text-[#00F0FF]">token</span>
+</div>
+<div>
+<div class="text-xl font-bold font-headline">+500 CREDITS</div>
+<div class="text-[10px] text-[#B3B7CF]">MATCH_BONUS_APPLIED</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Visual Decoration -->
+<div class="flex items-center justify-between opacity-30 mt-4">
+<div class="flex gap-2">
+<div class="w-12 h-1 bg-[#00F0FF]"></div>
+<div class="w-4 h-1 bg-[#00F0FF]"></div>
+<div class="w-2 h-1 bg-[#00F0FF]"></div>
+</div>
+<div class="font-headline text-[10px] tracking-[0.5em] text-[#B3B7CF]">BATTLE-FRONT // NEURAL_LINK_ACTIVE</div>
+<div class="flex gap-2 rotate-180">
+<div class="w-12 h-1 bg-[#00F0FF]"></div>
+<div class="w-4 h-1 bg-[#00F0FF]"></div>
+<div class="w-2 h-1 bg-[#00F0FF]"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Background Decoration Image (Hidden, metadata only) -->
+<div class="hidden">
+<img data-alt="High-tech futuristic command center with multiple glowing screens, blue neon accents, and dark brushed metal textures in a cinematic lighting style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRQJEuFKvl-qBGgYHitkuXOEaUB5GVbR4WLYX7PET1-zWJPgnWWF0VMifuaSt7QmvU3Xxn7kgm8NAUZAYjGc5_sf3DZuUKEiRyKkKrI5MWxhMNh4GFFoyGgRoMXbozs83oHz7bZE9UeU4OJLyxjwazXtg7EE-nzvvEtEf5ymDGgLaGPcs9o3kdtRc0CJgMGjINmTbJ5iBXCr31bhhfncyQ8fOnkM2nWOnSNVdSW5I95QIqiA_hrnJ_LVpXR51xjxpiBgO_w3ZZ9Jzl"/>
+</div>
+</body></html>

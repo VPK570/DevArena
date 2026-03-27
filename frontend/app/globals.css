@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;700&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #dbfcff;
+  --color-primary-container: #00f0ff;
+  --color-on-primary: #00363a;
+  --color-secondary: #c1c5de;
+  --color-secondary-container: #43485c;
+  --color-on-secondary: #2b3043;
+  --color-tertiary: #fff4f3;
+  --color-tertiary-container: #ffcecc;
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-background: #131316;
+  --color-surface: #131316;
+  --color-surface-container-lowest: #0e0e11;
+  --color-surface-container-low: #1c1b1e;
+  --color-surface-container: #201f22;
+  --color-surface-container-high: #2a2a2d;
+  --color-surface-container-highest: #353438;
+  --color-on-surface: #e5e1e5;
+  --color-on-surface-variant: #b9cacb;
+  --color-outline: #849495;
+  --color-outline-variant: #3b494b;
+
+  --font-headline: "Space Mono", monospace;
+  --font-body: "JetBrains Mono", monospace;
+  --font-label: "Space Mono", monospace;
+  --font-terminal: "VT323", monospace;
+}
+
+:root {
+  --primary: #00f0ff;
+  --error: #ff003c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0E0E11;
+  background-image: 
+    linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: #e5e1e5;
+  font-family: 'JetBrains Mono', monospace;
+  overflow-x: hidden;
+}
+
+.scanline {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 4px, 3px 100%;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.15;
+}
+
+.glitch-text {
+  text-shadow: 2px 0 #FF003C, -2px 0 #00F0FF;
+}
+
+.glass-card {
+  backdrop-filter: blur(12px);
+  background: rgba(53, 52, 56, 0.4);
+}
+
+.crt-glow {
+  text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+}
+
+.timer-glow {
+  text-shadow: 0 0 8px rgba(255, 0, 60, 0.6);
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+}
+
+@keyframes reverse-spin {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-reverse-spin {
+  animation: reverse-spin 6s linear infinite;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #0E0E11; }
+::-webkit-scrollbar-thumb { background: #3b494b; }
+::-webkit-scrollbar-thumb:hover { background: #00f0ff; }

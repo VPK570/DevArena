@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BATTLE-FRONT // THE NEXUS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Space+Grotesk:wght@300;400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed": "#002022",
+              "surface-tint": "#00dbe9",
+              "on-error-container": "#ffdad6",
+              "on-primary": "#00363a",
+              "on-background": "#e5e1e5",
+              "outline-variant": "#3b494b",
+              "tertiary-fixed": "#ffdad8",
+              "on-tertiary-fixed-variant": "#92001e",
+              "surface-container-low": "#1c1b1e",
+              "on-surface-variant": "#b9cacb",
+              "surface-container-high": "#2a2a2d",
+              "on-secondary": "#2b3043",
+              "error": "#ffb4ab",
+              "secondary-fixed": "#dde1fb",
+              "on-primary-fixed-variant": "#004f54",
+              "inverse-primary": "#006970",
+              "surface-container-highest": "#353438",
+              "on-secondary-fixed-variant": "#41465a",
+              "on-secondary-fixed": "#161b2d",
+              "surface-container-lowest": "#0e0e11",
+              "on-tertiary-container": "#c0002b",
+              "primary-fixed": "#7df4ff",
+              "primary-container": "#00f0ff",
+              "on-secondary-container": "#b3b7cf",
+              "secondary-container": "#43485c",
+              "on-surface": "#e5e1e5",
+              "error-container": "#93000a",
+              "surface-bright": "#39393c",
+              "inverse-on-surface": "#313033",
+              "secondary": "#c1c5de",
+              "outline": "#849495",
+              "surface": "#131316",
+              "surface-variant": "#353438",
+              "inverse-surface": "#e5e1e5",
+              "on-primary-container": "#006970",
+              "background": "#131316",
+              "secondary-fixed-dim": "#c1c5de",
+              "primary": "#dbfcff",
+              "surface-container": "#201f22",
+              "tertiary": "#fff4f3",
+              "primary-fixed-dim": "#00dbe9",
+              "on-tertiary": "#680012",
+              "surface-dim": "#131316",
+              "tertiary-container": "#ffcecc",
+              "tertiary-fixed-dim": "#ffb3b2",
+              "on-error": "#690005",
+              "on-tertiary-fixed": "#410008"
+            },
+            fontFamily: {
+              "headline": ["Space Mono"],
+              "body": ["JetBrains Mono"],
+              "label": ["Space Mono"]
+            },
+            borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        background-color: #0E0E11;
+        background-image: 
+          linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+        color: #e5e1e5;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .scanline {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 4px, 3px 100%;
+        pointer-events: none;
+        z-index: 100;
+      }
+      .glitch-text {
+        text-shadow: 2px 0 #FF003C, -2px 0 #00F0FF;
+      }
+      .glass-card {
+        backdrop-filter: blur(12px);
+        background: rgba(53, 52, 56, 0.4);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden">
+<div class="scanline"></div>
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 h-14 bg-[#131316] fixed top-0 z-50 border-b border-[#00F0FF]/15">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-widest text-[#00F0FF] font-headline">BATTLE-FRONT</span>
+<nav class="hidden md:flex gap-6 items-center h-full">
+<a class="text-[#00F0FF] border-b-2 border-[#00F0FF] pb-1 font-headline text-xs tracking-[0.1em] transition-all duration-50" href="#">TERMINAL</a>
+<a class="text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 font-headline text-xs tracking-[0.1em]" href="#">STREAK</a>
+<a class="text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 font-headline text-xs tracking-[0.1em]" href="#">MARKET</a>
+</nav>
+</div>
+<div class="flex items-center gap-4 text-[#00F0FF]">
+<button class="p-2 hover:bg-[#00F0FF]/10 transition-all duration-50">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+</button>
+<button class="p-2 hover:bg-[#00F0FF]/10 transition-all duration-50">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+</button>
+<button class="p-2 hover:bg-[#00F0FF]/10 transition-all duration-50">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-14 h-[calc(100vh-3.5rem)] flex flex-col p-4 z-40 bg-[#0E0E11] border-r border-[#00F0FF]/15 w-64 hidden lg:flex">
+<div class="mb-8 p-2">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-12 h-12 bg-surface-container-highest border border-[#00F0FF]/30 flex items-center justify-center">
+<img alt="OPERATOR_01" class="w-10 h-10" data-alt="pixel art style cyborg avatar with glowing cyan visor and dark metallic plate armor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0Q7gUidvCMDS97EqRVd-yqBDjNiMCggfm05CnRPwaiu8YokLynu4kBAPWMs2Axr8dQiG8W9i2oLA_6dybSiV8uaJ1sQ1x41_dOzPvZpowG1a3ZFDzVuZDbKHS9icvvKDGnkkHQOnaxoooRkpS_nBHqJEPhfRzye9r-H0bUtIKcprDKjc1SXnFCjMRayzRx_plrn1Undo7OTYn6qMJD2A1vgzURTtmbhurJkC4jModdWXr9D-ilALYJMRy6p6l529W94Ux1c6gLWQG"/>
+</div>
+<div>
+<div class="font-headline text-xs text-[#00F0FF] tracking-tight">OPERATOR_01</div>
+<div class="font-body text-[10px] text-[#B3B7CF]">RANK: ELITE_SQUAD</div>
+</div>
+</div>
+<button class="w-full bg-[#00F0FF] text-[#131316] font-bold py-2 text-xs font-headline tracking-widest hover:brightness-110 transition-all">EXECUTE_ROUTINE</button>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 bg-[#00F0FF] text-[#131316] font-bold p-2 mb-1" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="grid_view">grid_view</span>
+<span class="font-headline text-[0.75rem] tracking-widest">DASHBOARD</span>
+</a>
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:text-[#00F0FF] hover:bg-[#00F0FF]/5 p-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="leaderboard">leaderboard</span>
+<span class="font-headline text-[0.75rem] tracking-widest">RANKINGS</span>
+</a>
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:text-[#00F0FF] hover:bg-[#00F0FF]/5 p-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="rebase_edit">rebase_edit</span>
+<span class="font-headline text-[0.75rem] tracking-widest">CHALLENGES</span>
+</a>
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:text-[#00F0FF] hover:bg-[#00F0FF]/5 p-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="videocam">videocam</span>
+<span class="font-headline text-[0.75rem] tracking-widest">STREAMS</span>
+</a>
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:text-[#00F0FF] hover:bg-[#00F0FF]/5 p-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="description">description</span>
+<span class="font-headline text-[0.75rem] tracking-widest">SYSTEM_LOG</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-[#00F0FF]/10 pt-4 space-y-1">
+<a class="flex items-center gap-3 text-[#B3B7CF] hover:text-[#00F0FF] p-2" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="code">code</span>
+<span class="font-headline text-[0.75rem]">TERMINAL_OUT</span>
+</a>
+<a class="flex items-center gap-3 text-tertiary-container hover:text-error p-2" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="cancel">cancel</span>
+<span class="font-headline text-[0.75rem]">ABORT</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:ml-64 pt-14 min-h-screen">
+<!-- Hero Section -->
+<section class="relative h-[400px] flex items-center justify-center overflow-hidden border-b border-[#00F0FF]/15">
+<div class="absolute inset-0 bg-gradient-to-b from-[#00F0FF]/5 to-transparent"></div>
+<div class="relative z-10 text-center">
+<div class="text-[10px] text-[#00F0FF] font-headline tracking-[0.5em] mb-4 opacity-70">SYSTEM_ACCESS_GRANTED</div>
+<h1 class="text-7xl md:text-9xl font-headline font-black tracking-tighter glitch-text text-white leading-none">BATTLE-FRONT</h1>
+<p class="mt-6 text-[#B3B7CF] font-body max-w-xl mx-auto px-4">THE PREMIER CODING COMBAT ARENA. INFILTRATE. OPTIMIZE. DOMINATE.</p>
+<div class="mt-10 flex flex-wrap justify-center gap-4">
+<button class="group relative px-8 py-3 bg-transparent border-2 border-[#00F0FF] text-[#00F0FF] font-headline font-bold tracking-widest overflow-hidden transition-all hover:bg-[#00F0FF] hover:text-[#131316]">
+<span class="relative z-10">INITIATE_QUEUE</span>
+<div class="absolute inset-0 bg-[#00F0FF]/20 group-hover:bg-[#00F0FF] transition-all"></div>
+</button>
+<button class="px-8 py-3 border border-[#B3B7CF]/30 text-[#B3B7CF] font-headline font-bold tracking-widest hover:border-[#00F0FF] transition-all">VIEW_MANUAL</button>
+</div>
+</div>
+</section>
+<!-- Global Event Feed -->
+<div class="bg-surface-container-lowest border-b border-[#00F0FF]/15 h-8 overflow-hidden flex items-center">
+<div class="whitespace-nowrap flex items-center gap-8 animate-marquee font-body text-[10px] text-[#00F0FF]/60 uppercase tracking-widest">
+<span>[LOG] USER_X7 INFILTRATED BINARY_TREE_ARENA...</span>
+<span>[EVENT] DOUBLE_ELO_WEEKEND NOW ACTIVE...</span>
+<span>[ALERT] CRITICAL_VULNERABILITY DETECTED IN PATHFINDING_MODULE...</span>
+<span>[LOG] CLAN_VOID SECURED #1 POSITION...</span>
+<span>[LOG] USER_X7 INFILTRATED BINARY_TREE_ARENA...</span>
+<span>[EVENT] DOUBLE_ELO_WEEKEND NOW ACTIVE...</span>
+</div>
+</div>
+<div class="p-8 grid grid-cols-1 xl:grid-cols-4 gap-8">
+<!-- Left: Challenges -->
+<div class="xl:col-span-3 space-y-8">
+<div class="flex justify-between items-end border-b border-[#00F0FF]/15 pb-4">
+<h2 class="font-headline text-2xl font-bold tracking-widest text-white">ACTIVE_ARENAS <span class="text-[#00F0FF] text-sm ml-2">[03]</span></h2>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-[#00F0FF] animate-pulse"></div>
+<span class="text-[10px] text-[#B3B7CF]">SERVER_REGION: US_EAST</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="glass-card border border-[#00F0FF]/10 p-6 flex flex-col group hover:border-[#00F0FF]/50 transition-all relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 text-[8px] font-headline text-[#00F0FF] opacity-40">STMT_041</div>
+<div class="text-[#00F0FF] mb-4">
+<span class="material-symbols-outlined text-3xl" data-icon="account_tree">account_tree</span>
+</div>
+<h3 class="font-headline text-lg font-bold text-white mb-2 tracking-tight">Binary Tree Inversion</h3>
+<p class="text-xs text-[#B3B7CF] font-body mb-6 leading-relaxed">Algorithm efficiency check. Optimize recursion depth for multi-threaded environments.</p>
+<div class="mt-auto flex justify-between items-center">
+<span class="bg-[#00F0FF]/10 text-[#00F0FF] px-2 py-1 text-[9px] font-headline">EASY // 100XP</span>
+<span class="text-[10px] text-[#B3B7CF] font-body">42 COMPETING</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card border border-[#00F0FF]/10 p-6 flex flex-col group hover:border-[#00F0FF]/50 transition-all relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 text-[8px] font-headline text-[#00F0FF] opacity-40">STMT_092</div>
+<div class="text-[#00F0FF] mb-4">
+<span class="material-symbols-outlined text-3xl" data-icon="route">route</span>
+</div>
+<h3 class="font-headline text-lg font-bold text-white mb-2 tracking-tight">Dynamic Pathfinding</h3>
+<p class="text-xs text-[#B3B7CF] font-body mb-6 leading-relaxed">Navigate shifting node meshes with sub-millisecond latency. A* modification required.</p>
+<div class="mt-auto flex justify-between items-center">
+<span class="bg-[#00F0FF]/10 text-[#00F0FF] px-2 py-1 text-[9px] font-headline">MEDIUM // 450XP</span>
+<span class="text-[10px] text-[#B3B7CF] font-body">87 COMPETING</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card border border-[#FF003C]/30 p-6 flex flex-col group hover:border-[#FF003C]/70 transition-all relative overflow-hidden bg-[#FF003C]/5">
+<div class="absolute top-0 right-0 p-2 text-[8px] font-headline text-[#FF003C] opacity-60">STMT_666</div>
+<div class="text-[#FF003C] mb-4">
+<span class="material-symbols-outlined text-3xl" data-icon="security">security</span>
+</div>
+<h3 class="font-headline text-lg font-bold text-white mb-2 tracking-tight">Cryptographic Hash Collision</h3>
+<p class="text-xs text-[#B3B7CF] font-body mb-6 leading-relaxed">Find a SHA-256 partial collision under restrictive memory constraints. High risk.</p>
+<div class="mt-auto flex justify-between items-center">
+<span class="bg-[#FF003C]/20 text-[#FF003C] px-2 py-1 text-[9px] font-headline">HARD // 1500XP</span>
+<span class="text-[10px] text-[#FF003C] font-body font-bold">128 ACTIVE</span>
+</div>
+</div>
+</div>
+<!-- Recent Activity Table -->
+<div class="mt-12">
+<h2 class="font-headline text-sm font-bold tracking-widest text-[#B3B7CF] mb-4">LATEST_TRANSMISSIONS</h2>
+<div class="bg-surface-container-low border border-[#00F0FF]/5">
+<div class="grid grid-cols-4 p-3 border-b border-[#00F0FF]/10 text-[10px] font-headline text-[#00F0FF] opacity-60">
+<div>TIMESTAMP</div>
+<div>OPERATOR</div>
+<div>ACTION</div>
+<div>RESULT</div>
+</div>
+<div class="divide-y divide-[#00F0FF]/5">
+<div class="grid grid-cols-4 p-3 text-[11px] font-body text-[#B3B7CF] hover:bg-[#00F0FF]/5 transition-colors">
+<div>14:02:11</div>
+<div class="text-white">NULL_PTR</div>
+<div>INFILTRATION</div>
+<div class="text-[#00F0FF]">+42 ELO</div>
+</div>
+<div class="grid grid-cols-4 p-3 text-[11px] font-body text-[#B3B7CF] hover:bg-[#00F0FF]/5 transition-colors">
+<div>14:01:45</div>
+<div class="text-white">ROOT_USER</div>
+<div>OPTIMIZATION</div>
+<div class="text-[#00F0FF]">+12 ELO</div>
+</div>
+<div class="grid grid-cols-4 p-3 text-[11px] font-body text-[#B3B7CF] hover:bg-[#00F0FF]/5 transition-colors">
+<div>13:59:22</div>
+<div class="text-white">CYBER_STRIKE</div>
+<div>ABORTED</div>
+<div class="text-tertiary-container">-20 ELO</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: User Vitals -->
+<div class="space-y-6">
+<div class="bg-surface-container-highest border border-[#00F0FF]/15 p-6 space-y-8">
+<h2 class="font-headline text-xs font-bold tracking-widest text-[#00F0FF]">USER_VITALS_v4.2</h2>
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="font-headline text-[10px] text-[#B3B7CF]">CURRENT_ELO</span>
+<span class="font-headline text-2xl font-black text-white">2450</span>
+</div>
+<div class="h-1 bg-surface-container-low w-full">
+<div class="h-full bg-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.5)]" style="width: 82%;"></div>
+</div>
+<div class="flex justify-between mt-1 text-[9px] text-[#00F0FF]/50 font-headline">
+<span>RANK: ELITE</span>
+<span>GOAL: 3000 (GRANDMASTER)</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-3 bg-[#131316] border border-[#00F0FF]/5">
+<div class="text-[9px] font-headline text-[#B3B7CF] mb-1">STREAK</div>
+<div class="text-lg font-headline text-white">12_DAYS</div>
+</div>
+<div class="p-3 bg-[#131316] border border-[#00F0FF]/5">
+<div class="text-[9px] font-headline text-[#B3B7CF] mb-1">ACCURACY</div>
+<div class="text-lg font-headline text-white">94.8%</div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-[11px] font-body p-2 border border-[#00F0FF]/5 bg-surface-container-lowest">
+<span class="text-[#B3B7CF]">SYSTEM_STABILITY</span>
+<span class="text-[#00F0FF]">OPTIMAL</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-body p-2 border border-[#00F0FF]/5 bg-surface-container-lowest">
+<span class="text-[#B3B7CF]">FIREWALL_STATUS</span>
+<span class="text-[#00F0FF]">ACTIVE</span>
+</div>
+</div>
+<button class="w-full bg-[#FF003C] text-white font-headline text-xs py-3 font-bold tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="sync">sync</span>
+                        FORCE_SYNC_LOGS
+                    </button>
+</div>
+<!-- Active Competitors Micro-Grid -->
+<div class="p-6 bg-[#131316] border border-[#00F0FF]/15">
+<h3 class="font-headline text-[10px] text-[#B3B7CF] tracking-widest mb-4">NEAREST_THREATS</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-[#00F0FF]/10 flex items-center justify-center border border-[#00F0FF]/20">
+<img alt="Threat 1" class="w-6 h-6" data-alt="minimalist robot head icon with square features and orange eyes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5zrFqKaFREaTHOO4CYHVRBwB7f8yEOOhrPofYd1Sm7ykNTP3GilK-2P6PTnK7jvuH8OTGoK3Gvr1qLG0DsR6x2CJ7YQjiK4XdiJsV-iunicPm6fGK3ulfW-pGAQYMZf2ZMCAA4nBvCO26JEuUm28j2hbbcPFYEvBvSfHDFdVryfVrkxS4C98fC3J46J42xee4MulTngYWtSzqTdpHxJR1CbEFHavg_XDKotnsv0TEqZEIAcRJ2MB06RoW3kos4o8alxbZgXWS-1cP"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between text-[10px] font-headline text-white">
+<span>KILL_SWITCH_00</span>
+<span class="text-[#00F0FF]">2448 ELO</span>
+</div>
+<div class="h-0.5 bg-surface-container-low mt-1">
+<div class="h-full bg-tertiary-container" style="width: 90%;"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-[#00F0FF]/10 flex items-center justify-center border border-[#00F0FF]/20">
+<img alt="Threat 2" class="w-6 h-6" data-alt="minimalist robot head icon with antenna and green sensor eye" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWMClZH-lpzZcR3E2fEME21w0Fyiz54Z4IlfqtB7y2mvFPYWWf6j3zDsYkqBhOeSgaBJtHZkiJjv-AugPXjw3OGXYH30orVZ7rn83qbf0kpYjzsVM4m6ERbdl9BVxH04q7iOKK1gMU_CgLaKtUHODga_o0Q78uQ6e8EK5sNk-ksDfBq7fqHs8IA4qYQ0sjJWh5_g_6PX13vjn46t_VLpxxPZOlbwproBISLvAmrFf9BMgC2lmgEl7WeBIdFpwYrvJ0RoHZzEu9W9Wr"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between text-[10px] font-headline text-white">
+<span>DATA_GHOST</span>
+<span class="text-[#00F0FF]">2442 ELO</span>
+</div>
+<div class="h-0.5 bg-surface-container-low mt-1">
+<div class="h-full bg-tertiary-container" style="width: 75%;"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="lg:ml-64 bg-[#131316] border-t border-[#00F0FF]/15 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="text-[10px] font-headline text-[#B3B7CF] tracking-widest">
+            © 2024 BATTLE-FRONT // ALL RIGHTS RESERVED // <span class="text-[#00F0FF]">ENCRYPTED_SESSION</span>
+</div>
+<div class="flex gap-6">
+<a class="text-[10px] font-headline text-[#B3B7CF] hover:text-[#00F0FF] transition-colors" href="#">SECURITY_PROTOCOL</a>
+<a class="text-[10px] font-headline text-[#B3B7CF] hover:text-[#00F0FF] transition-colors" href="#">DEBUG_CONSOLE</a>
+<a class="text-[10px] font-headline text-[#B3B7CF] hover:text-[#00F0FF] transition-colors" href="#">API_RESOURCES</a>
+</div>
+</footer>
+<style>
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+        }
+    </style>
+</body></html>

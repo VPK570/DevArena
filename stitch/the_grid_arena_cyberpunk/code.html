@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BATTLE-FRONT // OPERATOR_01</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=VT323&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed": "#002022",
+                        "surface-tint": "#00dbe9",
+                        "on-error-container": "#ffdad6",
+                        "on-primary": "#00363a",
+                        "on-background": "#e5e1e5",
+                        "outline-variant": "#3b494b",
+                        "tertiary-fixed": "#ffdad8",
+                        "on-tertiary-fixed-variant": "#92001e",
+                        "surface-container-low": "#1c1b1e",
+                        "on-surface-variant": "#b9cacb",
+                        "surface-container-high": "#2a2a2d",
+                        "on-secondary": "#2b3043",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#dde1fb",
+                        "on-primary-fixed-variant": "#004f54",
+                        "inverse-primary": "#006970",
+                        "surface-container-highest": "#353438",
+                        "on-secondary-fixed-variant": "#41465a",
+                        "on-secondary-fixed": "#161b2d",
+                        "surface-container-lowest": "#0e0e11",
+                        "on-tertiary-container": "#c0002b",
+                        "primary-fixed": "#7df4ff",
+                        "primary-container": "#00f0ff",
+                        "on-secondary-container": "#b3b7cf",
+                        "secondary-container": "#43485c",
+                        "on-surface": "#e5e1e5",
+                        "error-container": "#93000a",
+                        "surface-bright": "#39393c",
+                        "inverse-on-surface": "#313033",
+                        "secondary": "#c1c5de",
+                        "outline": "#849495",
+                        "surface": "#131316",
+                        "surface-variant": "#353438",
+                        "inverse-surface": "#e5e1e5",
+                        "on-primary-container": "#006970",
+                        "background": "#131316",
+                        "secondary-fixed-dim": "#c1c5de",
+                        "primary": "#dbfcff",
+                        "surface-container": "#201f22",
+                        "tertiary": "#fff4f3",
+                        "primary-fixed-dim": "#00dbe9",
+                        "on-tertiary": "#680012",
+                        "surface-dim": "#131316",
+                        "tertiary-container": "#ffcecc",
+                        "tertiary-fixed-dim": "#ffb3b2",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed": "#410008"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Mono", "monospace"],
+                        "body": ["JetBrains Mono", "monospace"],
+                        "label": ["Space Mono", "monospace"],
+                        "terminal": ["VT323", "monospace"]
+                    },
+                    borderRadius: { "none": "0px" }
+                },
+            },
+        }
+    </script>
+<style>
+        .scanline {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+        .crt-glow {
+            text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+        }
+        .timer-glow {
+            text-shadow: 0 0 8px rgba(255, 0, 60, 0.6);
+        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #0E0E11; }
+        ::-webkit-scrollbar-thumb { background: #3b494b; }
+        ::-webkit-scrollbar-thumb:hover { background: #00F0FF; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Bar (Shared Component Strategy) -->
+<header class="fixed top-0 left-0 right-0 h-14 bg-[#131316] border-b border-[#00F0FF]/15 flex justify-between items-center px-6 z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-widest text-[#00F0FF] font-headline uppercase">BATTLE-FRONT</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[#00F0FF] border-b-2 border-[#00F0FF] pb-1 font-label text-xs tracking-[0.1em]" href="#">TERMINAL</a>
+<a class="text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 font-label text-xs tracking-[0.1em]" href="#">STREAK</a>
+<a class="text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 font-label text-xs tracking-[0.1em]" href="#">MARKET</a>
+</nav>
+</div>
+<!-- Live Countdown Timer -->
+<div class="flex items-center gap-4">
+<div class="bg-surface-container-lowest px-4 py-1 border border-error-container/30">
+<span class="font-terminal text-2xl text-error timer-glow tracking-widest">04:32</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#00F0FF] text-xl" data-icon="sensors">sensors</span>
+<span class="material-symbols-outlined text-[#B3B7CF] text-xl" data-icon="settings_input_component">settings_input_component</span>
+<div class="w-8 h-8 bg-primary-container/20 flex items-center justify-center border border-primary-container/40">
+<span class="material-symbols-outlined text-primary-container text-lg" data-icon="terminal">terminal</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Side Navigation Bar (Shared Component Strategy) -->
+<aside class="fixed left-0 top-14 h-[calc(100vh-3.5rem)] w-16 md:w-64 bg-[#0E0E11] border-r border-[#00F0FF]/15 flex flex-col z-40">
+<div class="p-4 border-b border-[#00F0FF]/5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-highest border border-outline-variant flex items-center justify-center overflow-hidden">
+<img alt="User Rank Avatar" class="w-full h-full" data-alt="pixelated cybernetic avatar in shades of cyan and slate with high contrast lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrSNfP0P5xDIAXp35qCSclCDE3RMp4JceyXumgajVQeI78XVGqtOuRHuYOQ7kMIr8GeI2e_CNY6gIqmMGAwMO0vWACTUY3vV8FZkfHaceoyKUXobizOti2J8yK8742p4BvKYtK9U33KOuNSyJYHY9jpIsp0zmiFxKp4XCXr4ffs6daiskDXzY1e3TOrPAzvo7prJH_kB96OyubmTDOMzYUp0RKGLnT_ygLyXt1E_ilyLOLeE8Ex1OyOoiRvF-c1wTbXtmDya2CFSt1"/>
+</div>
+<div class="hidden md:block">
+<p class="font-label text-xs font-black text-[#00F0FF] tracking-tighter">OPERATOR_01</p>
+<p class="font-label text-[10px] text-[#B3B7CF]">RANK: ELITE_SQUAD</p>
+</div>
+</div>
+</div>
+<div class="flex-1 py-4 flex flex-col gap-1 overflow-y-auto">
+<!-- Navigation Items -->
+<button class="flex items-center gap-4 px-4 py-3 text-[#B3B7CF] hover:bg-[#00F0FF]/5 hover:text-[#00F0FF] transition-colors duration-75">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span class="hidden md:block font-label text-xs tracking-wider">DASHBOARD</span>
+</button>
+<button class="flex items-center gap-4 px-4 py-3 bg-[#00F0FF] text-[#131316] font-bold">
+<span class="material-symbols-outlined" data-icon="leaderboard" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="hidden md:block font-label text-xs tracking-wider">RANKINGS</span>
+</button>
+<button class="flex items-center gap-4 px-4 py-3 text-[#B3B7CF] hover:bg-[#00F0FF]/5 hover:text-[#00F0FF] transition-colors duration-75">
+<span class="material-symbols-outlined" data-icon="rebase_edit">rebase_edit</span>
+<span class="hidden md:block font-label text-xs tracking-wider">CHALLENGES</span>
+</button>
+<button class="flex items-center gap-4 px-4 py-3 text-[#B3B7CF] hover:bg-[#00F0FF]/5 hover:text-[#00F0FF] transition-colors duration-75">
+<span class="material-symbols-outlined" data-icon="videocam">videocam</span>
+<span class="hidden md:block font-label text-xs tracking-wider">STREAMS</span>
+</button>
+<button class="flex items-center gap-4 px-4 py-3 text-[#B3B7CF] hover:bg-[#00F0FF]/5 hover:text-[#00F0FF] transition-colors duration-75">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="hidden md:block font-label text-xs tracking-wider">SYSTEM_LOG</span>
+</button>
+</div>
+<div class="p-4 border-t border-[#00F0FF]/5 flex flex-col gap-2">
+<button class="flex items-center gap-4 px-4 py-2 text-[#B3B7CF] hover:text-[#00F0FF] transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="code">code</span>
+<span class="hidden md:block font-label text-[10px]">TERMINAL_OUT</span>
+</button>
+<button class="flex items-center gap-4 px-4 py-2 text-error/60 hover:text-error transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="cancel">cancel</span>
+<span class="hidden md:block font-label text-[10px]">ABORT</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Stage (Split Panes) -->
+<main class="ml-16 md:ml-64 pt-14 h-screen flex flex-col md:flex-row overflow-hidden">
+<!-- Left Pane: Problem Description -->
+<section class="w-full md:w-1/4 h-full bg-surface-container-lowest border-r border-outline-variant/15 overflow-y-auto flex flex-col">
+<div class="p-6">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 text-[10px] font-label font-bold tracking-widest">HARDWARE_LVL_7</span>
+<span class="text-primary-container font-label text-[10px]">#0492-X</span>
+</div>
+<h1 class="text-2xl font-bold font-headline text-white mb-6 leading-tight tracking-tight uppercase">K-TH PERMUTATION</h1>
+<div class="prose prose-invert prose-sm max-w-none text-on-secondary-container space-y-4 leading-relaxed">
+<p>Given an integer <span class="text-primary-container">N</span> and an integer <span class="text-primary-container">K</span>, find the <span class="italic text-white">k-th lexicographical permutation</span> of the sequence [1, 2, ..., N].</p>
+<div class="bg-surface p-4 border-l-2 border-primary-container/30">
+<h4 class="font-label text-[10px] text-primary-container uppercase mb-2">Technical Constraints</h4>
+<ul class="list-none p-0 m-0 space-y-1 text-xs">
+<li class="flex items-start gap-2"><span class="text-primary-container opacity-50">/</span> 1 ≤ N ≤ 12</li>
+<li class="flex items-start gap-2"><span class="text-primary-container opacity-50">/</span> 1 ≤ K ≤ N!</li>
+<li class="flex items-start gap-2"><span class="text-primary-container opacity-50">/</span> Time Limit: 250ms</li>
+</ul>
+</div>
+<div class="space-y-4">
+<div class="p-4 bg-surface-container flex flex-col gap-2">
+<span class="font-label text-[10px] uppercase tracking-widest opacity-50">Input_Sample_01</span>
+<div class="font-body text-primary-container text-xs p-2 bg-surface-container-lowest border border-outline-variant/10">
+                                N = 3, K = 3
+                            </div>
+<span class="font-label text-[10px] uppercase tracking-widest opacity-50 mt-2">Expected_Output</span>
+<div class="font-body text-white text-xs p-2 bg-surface-container-lowest border border-outline-variant/10">
+                                "213"
+                            </div>
+</div>
+</div>
+<p class="text-xs opacity-70 border-t border-outline-variant/10 pt-4">
+                        The permutation sequence for N=3: <br/>
+                        1. "123", 2. "132", 3. "213", 4. "231", 5. "312", 6. "321"
+                    </p>
+</div>
+</div>
+<!-- Metadata Footer for Left Pane -->
+<div class="mt-auto p-4 bg-surface-container-low/30 border-t border-outline-variant/10">
+<div class="flex justify-between items-center text-[9px] font-label text-outline uppercase tracking-widest">
+<span>Cluster: BRAVO-9</span>
+<span>Lat: 34.05ms</span>
+</div>
+</div>
+</section>
+<!-- Center Pane: Code Editor -->
+<section class="flex-1 h-full bg-surface flex flex-col overflow-hidden">
+<!-- Editor Tabs -->
+<div class="h-10 bg-surface-container-lowest border-b border-outline-variant/15 flex items-center px-4">
+<div class="bg-surface px-4 h-full flex items-center border-x border-outline-variant/20 border-t-2 border-t-primary-container">
+<span class="font-label text-[10px] text-white tracking-widest">solution.py</span>
+</div>
+<div class="px-4 h-full flex items-center opacity-40 hover:opacity-100 cursor-pointer">
+<span class="font-label text-[10px] text-on-surface tracking-widest">main.py</span>
+</div>
+</div>
+<!-- Code Content -->
+<div class="flex-1 relative overflow-auto p-6 font-body text-sm leading-6">
+<div class="absolute inset-0 scanline z-10 opacity-[0.03]"></div>
+<!-- Line Numbers -->
+<div class="flex gap-6">
+<div class="text-outline-variant/40 text-right select-none pr-4 border-r border-outline-variant/10">
+                        01<br/>02<br/>03<br/>04<br/>05<br/>06<br/>07<br/>08<br/>09<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16
+                    </div>
+<!-- Code Text -->
+<div class="flex-1 whitespace-pre">
+<span class="text-[#FF003C]">import</span> math
+
+<span class="text-[#FF003C]">def</span> <span class="text-primary-container crt-glow">solve_permutation</span>(n, k):
+    <span class="text-on-secondary-container/50"># Calculate k-th lexicographical sequence</span>
+    numbers = list(range(1, n + 1))
+    permutation = <span class="text-[#FF003C]">""</span>
+    k -= 1
+    
+<span class="bg-primary-container/10 border-l-2 border-primary-container block -ml-2 pl-2"> <span class="text-[#FF003C]">for</span> i <span class="text-[#FF003C]">in</span> range(n, 0, -1):
+        idx = k // math.factorial(i - 1)
+        permutation += str(numbers.pop(idx))
+        k %= math.factorial(i - 1)</span>
+<span class="text-[#FF003C]">return</span> permutation
+
+<span class="text-on-secondary-container/50"># Operational input prompt</span>
+print(solve_permutation(3, 3))</div>
+</div>
+</div>
+<!-- Editor Console/Output (Recessed) -->
+<div class="h-1/4 bg-surface-container-lowest border-t border-outline-variant/20 flex flex-col p-4 relative">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[10px] text-primary-container" data-icon="terminal">terminal</span>
+<span class="font-label text-[10px] text-outline uppercase tracking-widest">Terminal Output</span>
+</div>
+<div class="flex-1 font-body text-xs text-on-surface-variant overflow-y-auto">
+<p class="text-green-400">[SYSTEM] COMPILATION_SUCCESS: 0.002ms</p>
+<p class="text-white mt-1">&gt; 213</p>
+<p class="mt-2 text-outline/40">_</p>
+</div>
+<!-- Interactive FAB -->
+<button class="absolute -top-6 right-8 h-12 px-6 bg-primary-container text-on-primary-container font-headline text-xs font-bold tracking-[0.2em] shadow-[0_0_20px_rgba(0,240,255,0.3)] flex items-center gap-3 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                    EXECUTE_ROUTINE
+                </button>
+</div>
+</section>
+<!-- Right Pane: Test Matrix & Peer Progress -->
+<section class="w-full md:w-1/4 h-full bg-surface-container-lowest border-l border-outline-variant/15 flex flex-col">
+<!-- Test Matrix Header -->
+<div class="p-6 border-b border-outline-variant/10">
+<h3 class="font-headline text-xs text-white tracking-[0.15em] mb-4 flex items-center justify-between">
+                    TEST_MATRIX
+                    <span class="text-[10px] text-primary-container">75% PASSED</span>
+</h3>
+<div class="grid grid-cols-4 gap-2">
+<div class="aspect-square bg-primary-container/20 border border-primary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check">check</span>
+</div>
+<div class="aspect-square bg-primary-container/20 border border-primary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check">check</span>
+</div>
+<div class="aspect-square bg-primary-container/20 border border-primary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check">check</span>
+</div>
+<div class="aspect-square bg-error-container/20 border border-error-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-sm" data-icon="close">close</span>
+</div>
+</div>
+</div>
+<!-- Peer Progress Indicators -->
+<div class="flex-1 p-6 flex flex-col gap-6 overflow-y-auto">
+<div>
+<h3 class="font-headline text-[10px] text-outline tracking-[0.2em] mb-4 uppercase">Peer_Live_Feed</h3>
+<div class="space-y-4">
+<!-- Peer Card 1 -->
+<div class="bg-surface p-3 border-l border-outline-variant/30 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-label text-[10px] text-white">X_TERMINATOR_8</span>
+<span class="text-[9px] font-body text-primary-container">Lvl 9</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest">
+<div class="w-[88%] h-full bg-primary-container"></div>
+</div>
+<div class="flex justify-between text-[9px] font-label text-outline uppercase">
+<span>Progress: 88%</span>
+<span>ACTIVE</span>
+</div>
+</div>
+<!-- Peer Card 2 -->
+<div class="bg-surface p-3 border-l border-outline-variant/30 flex flex-col gap-2 opacity-60">
+<div class="flex justify-between items-center">
+<span class="font-label text-[10px] text-white">GHOST_SHELL</span>
+<span class="text-[9px] font-body text-primary-container">Lvl 6</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest">
+<div class="w-[42%] h-full bg-secondary"></div>
+</div>
+<div class="flex justify-between text-[9px] font-label text-outline uppercase">
+<span>Progress: 42%</span>
+<span>IDLE</span>
+</div>
+</div>
+<!-- Peer Card 3 -->
+<div class="bg-surface p-3 border-l border-error/30 flex flex-col gap-2 border border-error/5">
+<div class="flex justify-between items-center">
+<span class="font-label text-[10px] text-error">NEO_VECTOR</span>
+<span class="text-[9px] font-body text-error">Lvl 11</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest">
+<div class="w-[100%] h-full bg-error"></div>
+</div>
+<div class="flex justify-between text-[9px] font-label text-error uppercase">
+<span>COMPLETED</span>
+<span>01:12:44</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Technical Telemetry -->
+<div class="p-6 bg-surface-container-lowest border-t border-outline-variant/15">
+<div class="flex items-center justify-between font-label text-[9px] text-outline/50 uppercase mb-2">
+<span>CPU_LOAD</span>
+<span>14.2%</span>
+</div>
+<div class="w-full h-0.5 bg-surface-container-highest mb-4">
+<div class="w-[14.2%] h-full bg-primary-container/40"></div>
+</div>
+<div class="flex items-center justify-between font-label text-[9px] text-outline/50 uppercase">
+<span>MEMORY</span>
+<span>256MB / 1GB</span>
+</div>
+</div>
+</section>
+</main>
+<!-- CRT Overlay Element (Full screen global texture) -->
+<div class="fixed inset-0 pointer-events-none z-[100] opacity-[0.02] mix-blend-overlay bg-[radial-gradient(circle,transparent_20%,#000_100%)]"></div>
+</body></html>

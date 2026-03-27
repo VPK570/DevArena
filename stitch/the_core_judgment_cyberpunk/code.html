@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed": "#002022",
+              "surface-tint": "#00dbe9",
+              "on-error-container": "#ffdad6",
+              "on-primary": "#00363a",
+              "on-background": "#e5e1e5",
+              "outline-variant": "#3b494b",
+              "tertiary-fixed": "#ffdad8",
+              "on-tertiary-fixed-variant": "#92001e",
+              "surface-container-low": "#1c1b1e",
+              "on-surface-variant": "#b9cacb",
+              "surface-container-high": "#2a2a2d",
+              "on-secondary": "#2b3043",
+              "error": "#ffb4ab",
+              "secondary-fixed": "#dde1fb",
+              "on-primary-fixed-variant": "#004f54",
+              "inverse-primary": "#006970",
+              "surface-container-highest": "#353438",
+              "on-secondary-fixed-variant": "#41465a",
+              "on-secondary-fixed": "#161b2d",
+              "surface-container-lowest": "#0e0e11",
+              "on-tertiary-container": "#c0002b",
+              "primary-fixed": "#7df4ff",
+              "primary-container": "#00f0ff",
+              "on-secondary-container": "#b3b7cf",
+              "secondary-container": "#43485c",
+              "on-surface": "#e5e1e5",
+              "error-container": "#93000a",
+              "surface-bright": "#39393c",
+              "inverse-on-surface": "#313033",
+              "secondary": "#c1c5de",
+              "outline": "#849495",
+              "surface": "#131316",
+              "surface-variant": "#353438",
+              "inverse-surface": "#e5e1e5",
+              "on-primary-container": "#006970",
+              "background": "#131316",
+              "secondary-fixed-dim": "#c1c5de",
+              "primary": "#dbfcff",
+              "surface-container": "#201f22",
+              "tertiary": "#fff4f3",
+              "primary-fixed-dim": "#00dbe9",
+              "on-tertiary": "#680012",
+              "surface-dim": "#131316",
+              "tertiary-container": "#ffcecc",
+              "tertiary-fixed-dim": "#ffb3b2",
+              "on-error": "#690005",
+              "on-tertiary-fixed": "#410008"
+            },
+            fontFamily: {
+              "headline": ["Space Mono", "monospace"],
+              "body": ["JetBrains Mono", "monospace"],
+              "label": ["Space Mono", "monospace"]
+            },
+            borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .scanline {
+        background: linear-gradient(to bottom, transparent 50%, rgba(0, 240, 255, 0.05) 50%);
+        background-size: 100% 4px;
+        pointer-events: none;
+      }
+      .flicker {
+        animation: flicker-opacity 0.1s infinite alternate;
+      }
+      @keyframes flicker-opacity {
+        from { opacity: 0.98; }
+        to { opacity: 1; }
+      }
+      .perspective-grid {
+        background-image: linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+        transform: perspective(500px) rotateX(60deg);
+        position: absolute;
+        bottom: -20%;
+        width: 200%;
+        height: 100%;
+        left: -50%;
+        z-index: 0;
+      }
+    </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Anchor (Shared Component) -->
+<header class="flex justify-between items-center w-full px-6 h-14 bg-[#131316] border-b border-[#00F0FF]/15 fixed top-0 left-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-widest text-[#00F0FF] dark:text-[#00F0FF] font-headline">BATTLE-FRONT</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 font-headline text-xs tracking-[0.1em] uppercase" href="#">TERMINAL</a>
+<a class="text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 font-headline text-xs tracking-[0.1em] uppercase" href="#">STREAK</a>
+<a class="text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all duration-50 font-headline text-xs tracking-[0.1em] uppercase" href="#">MARKET</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-[#00F0FF] hover:bg-[#00F0FF]/10 transition-all duration-50">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+</button>
+<button class="p-2 text-[#00F0FF] hover:bg-[#00F0FF]/10 transition-all duration-50">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+</button>
+<button class="p-2 text-[#00F0FF] hover:bg-[#00F0FF]/10 transition-all duration-50">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+</div>
+</header>
+<!-- Side Navigation Anchor (Shared Component - Hidden for Full Screen Task) -->
+<!-- Main Content Canvas -->
+<main class="relative w-screen h-screen pt-14 flex flex-col items-center justify-center bg-[#0E0E11] flicker">
+<!-- CRT Scanline Overlay -->
+<div class="scanline absolute inset-0 z-40"></div>
+<!-- Background Perspective Grid -->
+<div class="perspective-grid opacity-20"></div>
+<!-- HUD Left: System Stats -->
+<div class="absolute left-8 top-24 z-30 flex flex-col gap-4">
+<div class="space-y-1">
+<p class="font-headline text-[0.65rem] text-primary-container/60 tracking-widest">SYSTEM_LOAD</p>
+<div class="w-48 h-1 bg-surface-container-high relative">
+<div class="absolute inset-0 bg-primary-container w-[84%]"></div>
+</div>
+<p class="font-body text-[0.6rem] text-on-secondary-container">84.2% [THROTTLED]</p>
+</div>
+<div class="space-y-1">
+<p class="font-headline text-[0.65rem] text-primary-container/60 tracking-widest">MEMORY_USE</p>
+<div class="w-48 h-1 bg-surface-container-high relative">
+<div class="absolute inset-0 bg-primary-container w-[42%]"></div>
+</div>
+<p class="font-body text-[0.6rem] text-on-secondary-container">12GB/32GB [STABLE]</p>
+</div>
+<div class="mt-8 border-l border-primary-container/20 pl-4 py-2">
+<p class="font-headline text-[0.7rem] text-primary-container mb-2 tracking-widest">CORE_SEQUENCE</p>
+<ul class="font-body text-[0.6rem] text-on-secondary-container space-y-1">
+<li class="flex items-center gap-2"><span class="w-1 h-1 bg-primary-container"></span>FETCHING_INPUT</li>
+<li class="flex items-center gap-2"><span class="w-1 h-1 bg-primary-container"></span>PARSING_LOGIC</li>
+<li class="flex items-center gap-2 animate-pulse"><span class="w-1 h-1 bg-primary-container"></span>EXECUTING_BIAS</li>
+<li class="opacity-30 flex items-center gap-2"><span class="w-1 h-1 bg-white"></span>GENERATING_RESULT</li>
+</ul>
+</div>
+</div>
+<!-- HUD Right: Auditor Logs -->
+<div class="absolute right-8 top-24 z-30 w-64 text-right">
+<p class="font-headline text-[0.75rem] text-primary-container tracking-widest mb-4">AI_AUDITOR_BOOTING...</p>
+<div class="space-y-2">
+<div class="bg-surface-container-high/30 p-2 border-r-2 border-primary-container">
+<p class="text-[0.6rem] text-on-secondary-container leading-tight">SCANNING SUBMITTED VECTORS FOR ANOMALIES...</p>
+</div>
+<div class="p-2">
+<p class="text-[0.6rem] text-primary-container leading-tight">O(N) COMPLEXITY DETECTED.</p>
+</div>
+<div class="p-2">
+<p class="text-[0.6rem] text-on-secondary-container leading-tight">TRACING MEMORY ALLOCATION IN STACK B...</p>
+</div>
+<div class="p-2 opacity-50">
+<p class="text-[0.6rem] text-on-secondary-container leading-tight">WAITING FOR CORE VALIDATION...</p>
+</div>
+</div>
+</div>
+<!-- Center Stage: The Core -->
+<div class="relative z-20 flex flex-col items-center">
+<!-- Rotating Geometric Core (Wireframe Simulation) -->
+<div class="relative w-80 h-80 flex items-center justify-center">
+<!-- Outer Ring -->
+<div class="absolute inset-0 border-[1px] border-primary-container/30 rounded-full animate-spin [animation-duration:10s]"></div>
+<!-- Middle Ring -->
+<div class="absolute inset-4 border-[1px] border-tertiary-container/30 rounded-full animate-reverse-spin [animation-duration:6s]"></div>
+<!-- Central Core Asset -->
+<div class="relative w-48 h-48 bg-primary-container/5 backdrop-blur-xl border border-primary-container/40 flex items-center justify-center">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary-container/20 to-transparent"></div>
+<div class="text-primary-container drop-shadow-[0_0_15px_rgba(0,240,255,0.8)] flex flex-col items-center">
+<span class="material-symbols-outlined text-6xl animate-pulse" data-icon="deployed_code" style="font-variation-settings: 'FILL' 0;">deployed_code</span>
+<p class="font-headline text-[0.6rem] mt-2 tracking-[0.2em]">JUDGING</p>
+</div>
+<!-- Wireframe Details -->
+<div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary-container"></div>
+<div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary-container"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary-container"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary-container"></div>
+</div>
+<!-- Floating Data Points -->
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-container-highest px-3 py-1 border border-primary-container/20">
+<p class="font-body text-[0.65rem] text-primary-container">LATENCY: 14MS</p>
+</div>
+</div>
+<!-- Ticker -->
+<div class="mt-12 bg-surface-container-high/50 px-6 py-2 border-y border-primary-container/10 w-96 text-center">
+<p class="font-body text-sm text-primary-container tracking-wider">
+                    EXECUTING TEST 24/50... <span class="text-green-400 font-bold ml-2">PASS</span>
+</p>
+</div>
+<p class="mt-4 font-headline text-[0.6rem] text-on-secondary-container/40 tracking-[0.4em] uppercase">NEURAL_REASONING_IN_PROGRESS</p>
+</div>
+<!-- Footer Control Anchor -->
+<footer class="absolute bottom-12 left-0 w-full flex justify-center z-30">
+<div class="flex flex-col items-center gap-4">
+<button class="bg-tertiary-container/10 border border-tertiary-container/50 hover:bg-tertiary-container hover:text-on-tertiary-container transition-all duration-75 px-12 py-3 group">
+<span class="font-headline text-sm font-bold tracking-[0.2em] text-tertiary-container group-hover:text-on-tertiary-container">ABORT_MATCH</span>
+</button>
+<div class="flex gap-8 opacity-40">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<p class="font-headline text-[0.6rem] tracking-widest">ENCRYPTED_LINK_ACTIVE</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<p class="font-headline text-[0.6rem] tracking-widest">VOLTAGE_STABLE_4.2V</p>
+</div>
+</div>
+</div>
+</footer>
+<!-- Decorative Corners -->
+<div class="absolute top-20 left-6 opacity-20 pointer-events-none">
+<p class="font-headline text-[3rem] font-black text-primary-container leading-none select-none">BF_01</p>
+</div>
+<div class="absolute bottom-6 right-6 opacity-20 pointer-events-none text-right">
+<p class="font-headline text-[0.5rem] text-on-secondary-container tracking-widest">BATTLE-FRONT OPERATING SYSTEM // V.04.22.9</p>
+<p class="font-headline text-[0.5rem] text-on-secondary-container tracking-widest">K_CORE LICENSE: 771-X99-BRAVO</p>
+</div>
+</main>
+<style>
+        @keyframes reverse-spin {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        .animate-reverse-spin {
+            animation: reverse-spin 6s linear infinite;
+        }
+    </style>
+</body></html>
