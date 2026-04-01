@@ -113,42 +113,70 @@ Our V1 is a solitary proving ground. **V2 is multiplayer.**
 
 ---
 
-## 🛠️ Local Setup Guide for Judges
+## 🛠️ THE_DEPLOYMENT_PROTOCOL (Setup Guide)
 
-To test DevArena locally, you will need Node.js and Python (3.12+) installed.
+To synchronize with the DevArena network locally, follow these precise sequences.
 
-### 1. Terminal A: The Backend (FastAPI + Gemini)
-You must have a Gemini API key from [Google AI Studio](https://aistudio.google.com). Note: The system requires a `gemini-2.0-flash` capable token.
+### 📜 1. DATABASE_INITIALIZATION (Supabase)
+DevArena relies on Supabase for Auth, RLS, and persistent storage.
 
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-Create a `.env` file inside `/backend`:
-```env
-GEMINI_API_KEY=your_key_here
-ALLOWED_ORIGINS=http://localhost:3000
-```
-Run the server:
-```bash
-uvicorn main:app --reload --port 8000
-```
+1.  **Create a New Project** on [Supabase Dashboard](https://supabase.com).
+2.  **Schema Execution**: Open the **SQL Editor** in Supabase and execute the entire contents of [`supabase_schema.sql`](./supabase_schema.sql). This will:
+    *   Initialize the `users`, `challenges`, `submissions`, and `drafts` tables.
+    *   Set up Row Level Security (RLS) policies.
+    *   Seed the initial "Easy", "Medium", and "Hard" challenges.
+    *   Create triggers for auto-profiling new users on sign-up.
 
-### 2. Terminal B: The Frontend (Next.js)
+### 🛡️ 2. BACKEND_SYNC (FastAPI + Oracle V2.0)
+The backend manages code evaluation via Gemini and enforces secure data access.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+1.  **Navigate to Backend**:
+    ```bash
+    cd backend
+    ```
+2.  **Environment Setup**:
+    *   Create a virtual environment: `python3 -m venv venv`
+    *   Activate it: `source venv/bin/activate` (Mac/Linux) or `venv\Scripts\activate` (Windows)
+    *   Install Dependencies: `pip install -r requirements.txt`
+3.  **Environment Variables**:
+    *   Copy `.env.example` to `.env`: `cp .env.example .env`
+    *   Populate `GEMINI_API_KEY` ([Get one here](https://aistudio.google.com)).
+    *   Populate `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` (from Project Settings -> API).
+4.  **Launch Routine**:
+    ```bash
+    uvicorn main:app --reload --port 8000
+    ```
 
-### 3. Execution
-Open `http://localhost:3000` in your browser. 
-Click **"EXECUTE_ROUTINE"** or navigate to Challenges, pick a hardware level, and start hacking the mainframe!
+### 🖥️ 3. FRONTEND_SYNC (Next.js 15+ App Router)
+The frontend is built with high-fidelity components and aggressive styling.
+
+1.  **Navigate to Frontend**:
+    ```bash
+    cd frontend
+    ```
+2.  **Environment Setup**:
+    *   Install Node Packages: `npm install`
+3.  **Environment Variables**:
+    *   Copy `.env.example` to `.env.local`: `cp .env.example .env.local`
+    *   Populate `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+4.  **Launch Routine**:
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 🦾 IMPLEMENTATION_ADVISORY (For Contribs)
+
+If you are extending the DevArena, keep these design laws in mind:
+
+1.  **Aesthetics Over Default**: Never use standard browser buttons. Use the predefined "brutalist" styles in `globals.css`. If it doesn't glow, it's not ready.
+2.  **The Oracle is Sovereign**: All grading must go through the `/evaluate` endpoint. Do not perform subjective logic on the frontend.
+3.  **Sandboxing is Mandatory**: User-submitted code *must* be executed in the `Iframe` sandbox to prevent XSS and DOM pollution. Use the `postMessage` protocol defined in the components to bridge communication.
+4.  **Supabase Auth**: Ensure all protected routes check for the user's session via the `AuthContext`.
 
 ---
 <p align="center">
-  <i>"I'm in."</i>
+  <i>"JACKING IN... ACCESS GRANTED."</i>
 </p>
+
