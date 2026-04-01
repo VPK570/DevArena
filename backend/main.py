@@ -52,7 +52,7 @@ app.include_router(explain.router, prefix="/api", tags=["explain"])
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": "2.0.0", "model": "gemini-1.5-flash"}
+    return {"status": "ok", "version": "2.0.0", "model": "openrouter/free"}
 
 
 # ── Startup check ──────────────────────────────────────────────────────────
@@ -60,11 +60,11 @@ async def health():
 
 @app.on_event("startup")
 async def startup_check():
-    if not os.environ.get("GEMINI_API_KEY"):
+    if not os.environ.get("OPENROUTER_API_KEY"):
         logger.warning(
-            "⚠️  GEMINI_API_KEY is not set. AI endpoints will fail. "
-            "Get a key at https://aistudio.google.com"
+            "⚠️  OPENROUTER_API_KEY is not set. AI endpoints will fail. "
+            "Get a key at https://openrouter.ai/keys"
         )
     else:
-        logger.info("✅ GEMINI_API_KEY detected — AI endpoints are ready.")
+        logger.info("✅ OPENROUTER_API_KEY detected — AI endpoints are ready.")
     logger.info("🚀 Battle-Front API v2.0.0 started | origins=%s", allowed_origins)

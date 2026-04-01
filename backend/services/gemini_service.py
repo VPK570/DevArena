@@ -1,7 +1,8 @@
 """
-Gemini AI service layer for Battle-Front.
+OpenRouter AI service layer for Battle-Front.
 
-All four core functions call Gemini 1.5 Flash and return parsed dicts.
+All four core functions call qwen/qwen3-coder:free via OpenRouter
+using plain HTTP requests and return parsed dicts.
 """
 
 import json
@@ -9,9 +10,9 @@ import logging
 import os
 import re
 
-import google.generativeai as genai
-from google.api_core.exceptions import ResourceExhausted
+import requests
 
+from models.schemas import RateLimitError
 from data.challenges import get_challenge, apply_difficulty_scaling, derive_verdict
 
 logger = logging.getLogger(__name__)
@@ -19,22 +20,58 @@ logger = logging.getLogger(__name__)
 from dotenv import load_dotenv
 load_dotenv()
 
-# ── Configure Gemini on module load ─────────────────────────────────────────
+# ── OpenRouter config ────────────────────────────────────────────────────────
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY", ""))
-model = genai.GenerativeModel("gemini-2.0-flash")
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_MODEL   = "openrouter/free"
+
+
+def _chat(system: str, user: str) -> str:
+    """Send a chat request to OpenRouter and return the assistant's text."""
+    api_key = os.environ.get("OPENROUTER_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("OPENROUTER_API_KEY is not set in environment.")
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "Referer": "https://devarena.app",
+        "X-Title": "DevArena Battle-Front",
+    }
+
+    payload = {
+        "model": OPENROUTER_MODEL,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user",   "content": user},
+        ],
+    }
+
+    resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=60)
+
+    if resp.status_code == 429:
+        # Extract the real error from OpenRouter if available
+        remote_error = resp.json().get('error', {}).get('message', 'Local or Provider rate limit hit')
+        raise RateLimitError(remote_error)
+    if not resp.ok:
+        raise RuntimeError(
+            f"OpenRouter API error {resp.status_code}: {resp.text[:300]}"
+        )
+
+    data = resp.json()
+    return data["choices"][0]["message"]["content"] or ""
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
 def parse_json_response(text: str) -> dict:
-    """Strip markdown fences and parse JSON from Gemini output."""
+    """Strip markdown fences and parse JSON from model output."""
     clean = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
     clean = re.sub(r"```\s*$", "", clean.strip(), flags=re.MULTILINE)
     try:
         return json.loads(clean.strip())
     except json.JSONDecodeError as exc:
-        raise ValueError(f"Gemini returned malformed JSON: {exc}") from exc
+        raise ValueError(f"Model returned malformed JSON: {exc}") from exc
 
 
 def _build_challenge_context(challenge: dict) -> str:
@@ -84,18 +121,15 @@ def evaluate_code(code: str, challenge_id: str) -> dict:
         f"--- Submitted Code ---\n{code}\n---"
     )
 
-    full_prompt = f"{system_prompt}\n\n{user_prompt}"
-
-    # Try up to 2 attempts (retry once on malformed JSON)
     last_error = None
     for attempt in range(2):
         try:
             logger.info(
-                "Gemini call | func=evaluate_code | challenge=%s | attempt=%d | prompt_len=%d",
-                challenge_id, attempt + 1, len(full_prompt),
+                "OpenRouter call | func=evaluate_code | challenge=%s | attempt=%d",
+                challenge_id, attempt + 1,
             )
-            response = model.generate_content(full_prompt)
-            data = parse_json_response(response.text)
+            text = _chat(system_prompt, user_prompt)
+            data = parse_json_response(text)
 
             raw_score = int(data.get("score", 0))
             raw_score = max(0, min(100, raw_score))
@@ -106,7 +140,7 @@ def evaluate_code(code: str, challenge_id: str) -> dict:
             final_verdict = derive_verdict(adjusted_score)
 
             logger.info(
-                "Gemini response | challenge=%s | raw_score=%d | adjusted=%d | verdict=%s",
+                "OpenRouter response | challenge=%s | raw=%d | adjusted=%d | verdict=%s",
                 challenge_id, raw_score, adjusted_score, final_verdict,
             )
 
@@ -122,14 +156,13 @@ def evaluate_code(code: str, challenge_id: str) -> dict:
             last_error = exc
             logger.warning("JSON parse failed (attempt %d): %s", attempt + 1, exc)
             continue
-        except ResourceExhausted:
-            # Let ResourceExhausted bubble up to be caught by the router for a 429 status code
+        except RateLimitError:
             raise
         except Exception as exc:
-            logger.exception("Gemini API error in evaluate_code: %s", exc)
+            logger.exception("OpenRouter API error in evaluate_code: %s", exc)
             raise RuntimeError("AI evaluation failed. Please try again.") from exc
 
-    raise RuntimeError(f"Failed to parse Gemini response after retries: {last_error}")
+    raise RuntimeError(f"Failed to parse model response after retries: {last_error}")
 
 
 # ── 2. Generate Solution ───────────────────────────────────────────────────
@@ -142,7 +175,7 @@ def generate_solution(challenge_id: str, user_code: str) -> dict:
 
     logger.info("generate_solution | challenge=%s | code_len=%d", challenge_id, len(user_code))
 
-    prompt = (
+    system_prompt = (
         "You are an expert JavaScript/React developer.\n"
         "Take the user's code as a base and return a corrected, complete version.\n"
         "Add inline JS comments on every changed or added line: // CHANGED: reason\n"
@@ -155,15 +188,18 @@ def generate_solution(challenge_id: str, user_code: str) -> dict:
         '  "comments": [\n'
         '    { "line": <int>, "comment": "<what was changed on this line>" }\n'
         "  ]\n"
-        "}\n\n"
+        "}"
+    )
+
+    user_prompt = (
         f"{_build_challenge_context(challenge)}\n\n"
         f"--- User's Code ---\n{user_code}\n---"
     )
 
     try:
-        logger.info("Gemini call | func=generate_solution | challenge=%s | prompt_len=%d", challenge_id, len(prompt))
-        response = model.generate_content(prompt)
-        data = parse_json_response(response.text)
+        logger.info("OpenRouter call | func=generate_solution | challenge=%s", challenge_id)
+        text = _chat(system_prompt, user_prompt)
+        data = parse_json_response(text)
         return {
             "solution": data.get("solution", ""),
             "explanation": data.get("explanation", ""),
@@ -172,10 +208,10 @@ def generate_solution(challenge_id: str, user_code: str) -> dict:
     except ValueError as exc:
         logger.exception("JSON parse failed in generate_solution: %s", exc)
         raise RuntimeError("Failed to parse AI solution response.") from exc
-    except ResourceExhausted:
+    except RuntimeError:
         raise
     except Exception as exc:
-        logger.exception("Gemini API error in generate_solution: %s", exc)
+        logger.exception("OpenRouter API error in generate_solution: %s", exc)
         raise RuntimeError("AI solution generation failed. Please try again.") from exc
 
 
@@ -189,7 +225,7 @@ def generate_hint(challenge_id: str, user_code: str) -> dict:
 
     logger.info("generate_hint | challenge=%s | code_len=%d", challenge_id, len(user_code))
 
-    prompt = (
+    system_prompt = (
         "You are a helpful coding mentor for frontend challenges.\n"
         "Look at the user's current (possibly incomplete) code.\n"
         "Give ONE specific actionable hint that moves them forward.\n"
@@ -200,15 +236,18 @@ def generate_hint(challenge_id: str, user_code: str) -> dict:
         "{\n"
         '  "hint": "<one specific actionable hint>",\n'
         '  "category": "<approach|syntax|logic|api-usage>"\n'
-        "}\n\n"
+        "}"
+    )
+
+    user_prompt = (
         f"{_build_challenge_context(challenge)}\n\n"
         f"--- User's Current Code ---\n{user_code}\n---"
     )
 
     try:
-        logger.info("Gemini call | func=generate_hint | challenge=%s | prompt_len=%d", challenge_id, len(prompt))
-        response = model.generate_content(prompt)
-        data = parse_json_response(response.text)
+        logger.info("OpenRouter call | func=generate_hint | challenge=%s", challenge_id)
+        text = _chat(system_prompt, user_prompt)
+        data = parse_json_response(text)
         return {
             "hint": data.get("hint", ""),
             "category": data.get("category", "approach"),
@@ -216,10 +255,10 @@ def generate_hint(challenge_id: str, user_code: str) -> dict:
     except ValueError as exc:
         logger.exception("JSON parse failed in generate_hint: %s", exc)
         raise RuntimeError("Failed to parse AI hint response.") from exc
-    except ResourceExhausted:
+    except RuntimeError:
         raise
     except Exception as exc:
-        logger.exception("Gemini API error in generate_hint: %s", exc)
+        logger.exception("OpenRouter API error in generate_hint: %s", exc)
         raise RuntimeError("AI hint generation failed. Please try again.") from exc
 
 
@@ -233,7 +272,7 @@ def explain_code(code: str, challenge_id: str) -> dict:
 
     logger.info("explain_code | challenge=%s | code_len=%d", challenge_id, len(code))
 
-    prompt = (
+    system_prompt = (
         "You are an expert JavaScript/React teacher.\n"
         "Go line by line through the submitted code.\n"
         "For each non-blank, non-comment line: explain what it does in plain English "
@@ -245,15 +284,18 @@ def explain_code(code: str, challenge_id: str) -> dict:
         '    { "line": <int>, "code": "<the code on that line>", "explanation": "<what it does>" }\n'
         "  ],\n"
         '  "overallSummary": "<2-3 sentence summary of what the entire code does>"\n'
-        "}\n\n"
+        "}"
+    )
+
+    user_prompt = (
         f"{_build_challenge_context(challenge)}\n\n"
         f"--- Submitted Code ---\n{code}\n---"
     )
 
     try:
-        logger.info("Gemini call | func=explain_code | challenge=%s | prompt_len=%d", challenge_id, len(prompt))
-        response = model.generate_content(prompt)
-        data = parse_json_response(response.text)
+        logger.info("OpenRouter call | func=explain_code | challenge=%s", challenge_id)
+        text = _chat(system_prompt, user_prompt)
+        data = parse_json_response(text)
         return {
             "lines": data.get("lines", []),
             "overallSummary": data.get("overallSummary", ""),
@@ -261,8 +303,8 @@ def explain_code(code: str, challenge_id: str) -> dict:
     except ValueError as exc:
         logger.exception("JSON parse failed in explain_code: %s", exc)
         raise RuntimeError("Failed to parse AI explanation response.") from exc
-    except ResourceExhausted:
+    except RuntimeError:
         raise
     except Exception as exc:
-        logger.exception("Gemini API error in explain_code: %s", exc)
+        logger.exception("OpenRouter API error in explain_code: %s", exc)
         raise RuntimeError("AI explanation failed. Please try again.") from exc

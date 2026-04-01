@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from models.schemas import ExplainRequest, ExplainResponse, ErrorResponse
+from models.schemas import ExplainRequest, ExplainResponse, ErrorResponse, RateLimitError
 from data.challenges import get_challenge
 from services.gemini_service import explain_code
 
@@ -38,8 +38,14 @@ async def explain(request: ExplainRequest):
     try:
         result = explain_code(request.code, request.challengeId)
         return ExplainResponse(**result)
+    except RateLimitError as exc:
+        logger.warning("⚠️ Rate limit: %s", exc)
+        raise HTTPException(
+            status_code=429,
+            detail={"error": "ORACLE_RATE_LIMIT", "detail": str(exc)},
+        )
     except RuntimeError as exc:
-        logger.exception("Gemini explain failed for %s", request.challengeId)
+        logger.exception("AI explain failed for %s", request.challengeId)
         raise HTTPException(
             status_code=502,
             detail={"error": "AI explanation failed", "detail": str(exc)},

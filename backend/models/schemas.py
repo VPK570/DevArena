@@ -8,6 +8,11 @@ class ChallengeNotFoundError(Exception):
     pass
 
 
+class RateLimitError(Exception):
+    """Raised when the AI provider returns a 429."""
+    pass
+
+
 # ── /api/evaluate ───────────────────────────────────────────────────────────
 
 class EvaluateRequest(BaseModel):

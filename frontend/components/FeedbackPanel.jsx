@@ -18,20 +18,22 @@ export default function FeedbackPanel({ feedbackData, timeTaken, onTryAgain }) {
   let borderColor = "border-[#00F0FF]";
   let bgColor = "bg-[#00F0FF]";
   let title = "VICTORY";
-  let eloDelta = "+24"; // Mocked for now
+  
+  // Real ELO data from API
+  const eloDelta = feedbackData?.eloChange !== undefined
+    ? (feedbackData.eloChange >= 0 ? `+${feedbackData.eloChange}` : `${feedbackData.eloChange}`)
+    : (verdict === "Pass" ? "+??" : "-??");
 
   if (verdict === "Partial") {
     themeColor = "text-yellow-400";
     borderColor = "border-yellow-400";
     bgColor = "bg-yellow-400";
     title = "PARTIAL SUCCESS";
-    eloDelta = "+5";
   } else if (verdict === "Fail") {
     themeColor = "text-error";
     borderColor = "border-error";
     bgColor = "bg-error";
     title = "DEFEAT";
-    eloDelta = "-15";
   }
 
   return (
@@ -67,16 +69,16 @@ export default function FeedbackPanel({ feedbackData, timeTaken, onTryAgain }) {
                 <div className="text-[8px] font-headline text-[#B3B7CF] uppercase mb-1">Score</div>
                 <div className={`text-xl font-bold ${themeColor}`}>{score}%</div>
               </div>
-              <div className={`border-l-2 ${borderColor} pl-4`}>
+              <div className={`border-l-2 ${borderColor} pl-4 animate-elo-pulse`}>
                 <div className="text-[8px] font-headline text-[#B3B7CF] uppercase mb-1">ELO Delta</div>
                 <div className={`text-xl font-bold ${themeColor} flex items-center gap-2`}>
                   {eloDelta}
-                  <span className="material-symbols-outlined text-sm">{verdict === "Pass" ? 'trending_up' : 'trending_down'}</span>
+                  <span className="material-symbols-outlined text-sm">{feedbackData?.eloChange >= 0 ? 'trending_up' : 'trending_down'}</span>
                 </div>
               </div>
               <div className={`border-l-2 ${borderColor} pl-4`}>
-                <div className="text-[8px] font-headline text-[#B3B7CF] uppercase mb-1">Verdict</div>
-                <div className={`text-xl font-bold ${themeColor} uppercase`}>{verdict}</div>
+                <div className="text-[8px] font-headline text-[#B3B7CF] uppercase mb-1">New Rating</div>
+                <div className={`text-xl font-bold ${themeColor} uppercase`}>{feedbackData?.newElo || '---'}</div>
               </div>
             </div>
           </div>

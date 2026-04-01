@@ -104,6 +104,38 @@ body {
   animation: reverse-spin 6s linear infinite;
 }
 
+/* AI Panel slide-in */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* ELO change pulse */
+@keyframes eloPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.animate-elo-pulse {
+  animation: eloPulse 0.6s ease-in-out 3;
+}
+
+/* Glitch effect for evaluating state */
+@keyframes glitchText {
+  0%, 100% { text-shadow: 2px 0 #FF003C, -2px 0 #00F0FF; }
+  25% { text-shadow: -2px 0 #FF003C, 2px 0 #00F0FF; }
+  50% { text-shadow: 2px 2px #FF003C, -2px -2px #00F0FF; }
+  75% { text-shadow: -2px -2px #FF003C, 2px 2px #00F0FF; }
+}
+
+.animate-glitch {
+  animation: glitchText 0.3s infinite;
+}
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: #0E0E11; }
 ::-webkit-scrollbar-thumb { background: #3b494b; }

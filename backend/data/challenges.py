@@ -47,8 +47,8 @@ CHALLENGES: dict[str, dict] = {
         ],
     },
     # ── 3. CSS Layout Ninja (Hard) ──────────────────────────────────────────
-    "css-layout": {
-        "id": "css-layout",
+    "css-layout-ninja": {
+        "id": "css-layout-ninja",
         "title": "CSS Layout Ninja",
         "difficulty": "Hard",
         "description": (

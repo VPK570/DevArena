@@ -1,22 +1,53 @@
+'use client';
+
 import Link from 'next/link';
 import challenges from '@/lib/challenges';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase';
 
 export default function HomePage() {
+  const { profile, isAuthenticated, loading } = useAuth();
+  const [dbChallenges, setDbChallenges] = useState([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchChallenges() {
+      if (!supabase) return;
+      
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('*');
+      
+      if (data && !error) {
+        setDbChallenges(data);
+      }
+    }
+    fetchChallenges();
+  }, [supabase]);
+
+  // Use DB challenges if available, otherwise fallback to static
+  const activeChallenges = dbChallenges.length > 0 ? dbChallenges : challenges;
+
   return (
     <main className="lg:ml-64 pt-14 min-h-screen">
       {/* Hero Section */}
       <section className="relative h-[400px] flex items-center justify-center overflow-hidden border-b border-[#00F0FF]/15">
         <div className="absolute inset-0 bg-gradient-to-b from-[#00F0FF]/5 to-transparent"></div>
         <div className="relative z-10 text-center">
-          <div className="text-[10px] text-[#00F0FF] font-headline tracking-[0.5em] mb-4 opacity-70">SYSTEM_ACCESS_GRANTED</div>
+          <div className="text-[10px] text-[#00F0FF] font-headline tracking-[0.5em] mb-4 opacity-70">
+            {isAuthenticated ? `WELCOME_BACK_${profile?.username?.toUpperCase()}` : 'SYSTEM_ACCESS_GRANTED'}
+          </div>
           <h1 className="text-7xl md:text-9xl font-headline font-black tracking-tighter glitch-text text-white leading-none">BATTLE-FRONT</h1>
           <p className="mt-6 text-[#B3B7CF] font-body max-w-xl mx-auto px-4 uppercase">THE PREMIER CODING COMBAT ARENA. INFILTRATE. OPTIMIZE. DOMINATE.</p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <button className="group relative px-8 py-3 bg-transparent border-2 border-[#00F0FF] text-[#00F0FF] font-headline font-bold tracking-widest overflow-hidden transition-all hover:bg-[#00F0FF] hover:text-[#131316]">
+            <Link href={activeChallenges.length > 0 ? `/challenge/${activeChallenges[0].slug || activeChallenges[0].id}` : '#'} className="group relative px-8 py-3 bg-transparent border-2 border-[#00F0FF] text-[#00F0FF] font-headline font-bold tracking-widest overflow-hidden transition-all hover:bg-[#00F0FF] hover:text-[#131316]">
               <span className="relative z-10">INITIATE_QUEUE</span>
               <div className="absolute inset-0 bg-[#00F0FF]/20 group-hover:bg-[#00F0FF] transition-all"></div>
-            </button>
-            <button className="px-8 py-3 border border-[#B3B7CF]/30 text-[#B3B7CF] font-headline font-bold tracking-widest hover:border-[#00F0FF] transition-all">VIEW_MANUAL</button>
+            </Link>
+            {!isAuthenticated && (
+              <Link href="/login" className="px-8 py-3 border border-[#B3B7CF]/30 text-[#B3B7CF] font-headline font-bold tracking-widest hover:border-[#00F0FF] transition-all">AUTHENTICATE</Link>
+            )}
           </div>
         </div>
       </section>
@@ -28,8 +59,7 @@ export default function HomePage() {
           <span>[EVENT] DOUBLE_ELO_WEEKEND NOW ACTIVE...</span>
           <span>[ALERT] CRITICAL_VULNERABILITY DETECTED IN PATHFINDING_MODULE...</span>
           <span>[LOG] CLAN_VOID SECURED #1 POSITION...</span>
-          <span>[LOG] USER_X7 INFILTRATED BINARY_TREE_ARENA...</span>
-          <span>[EVENT] DOUBLE_ELO_WEEKEND NOW ACTIVE...</span>
+          {isAuthenticated && <span>[SESSION] OPERATOR_{profile?.username?.toUpperCase()} LOADED...</span>}
         </div>
       </div>
 
@@ -37,7 +67,7 @@ export default function HomePage() {
         {/* Left: Challenges */}
         <div className="xl:col-span-3 space-y-8">
           <div className="flex justify-between items-end border-b border-[#00F0FF]/15 pb-4">
-            <h2 className="font-headline text-2xl font-bold tracking-widest text-white uppercase">ACTIVE_ARENAS <span className="text-[#00F0FF] text-sm ml-2">[{challenges.length.toString().padStart(2, '0')}]</span></h2>
+            <h2 className="font-headline text-2xl font-bold tracking-widest text-white uppercase">ACTIVE_ARENAS <span className="text-[#00F0FF] text-sm ml-2">[{activeChallenges.length.toString().padStart(2, '0')}]</span></h2>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-[#00F0FF] animate-pulse"></div>
@@ -47,27 +77,27 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {challenges.map((challenge) => (
+            {activeChallenges.map((challenge) => (
               <Link 
                 key={challenge.id} 
-                href={`/challenge/${challenge.id}`}
+                href={`/challenge/${challenge.slug || challenge.id}`}
                 className={`glass-card border border-[#00F0FF]/10 p-6 flex flex-col group hover:border-[#00F0FF]/50 transition-all relative overflow-hidden ${challenge.difficulty === 'Hard' ? 'bg-[#FF003C]/5 border-[#FF003C]/30 hover:border-[#FF003C]/70' : ''}`}
               >
-                <div className={`absolute top-0 right-0 p-2 text-[8px] font-headline opacity-40 uppercase ${challenge.difficulty === 'Hard' ? 'text-[#FF003C]' : 'text-[#00F0FF]'}`}>
-                  STMT_{challenge.id.substring(0, 3).toUpperCase()}
+                <div className={`absolute top-0 right-0 p-2 text-[8px] font-headline opacity-40 uppercase ${challenge.difficulty === 'Hard' || challenge.difficulty === 'hard' ? 'text-[#FF003C]' : 'text-[#00F0FF]'}`}>
+                  STMT_{challenge.id.toString().substring(0, 3).toUpperCase()}
                 </div>
-                <div className={`mb-4 ${challenge.difficulty === 'Hard' ? 'text-[#FF003C]' : 'text-[#00F0FF]'}`}>
+                <div className={`mb-4 ${challenge.difficulty === 'Hard' || challenge.difficulty === 'hard' ? 'text-[#FF003C]' : 'text-[#00F0FF]'}`}>
                   <span className="material-symbols-outlined text-3xl">
-                    {challenge.difficulty === 'Easy' ? 'account_tree' : challenge.difficulty === 'Medium' ? 'route' : 'security'}
+                    {(challenge.difficulty === 'Easy' || challenge.difficulty === 'easy') ? 'account_tree' : (challenge.difficulty === 'Medium' || challenge.difficulty === 'medium') ? 'route' : 'security'}
                   </span>
                 </div>
                 <h3 className="font-headline text-lg font-bold text-white mb-2 tracking-tight">{challenge.title}</h3>
-                <p className="text-xs text-[#B3B7CF] font-body mb-6 leading-relaxed flex-grow">{challenge.shortDescription}</p>
+                <p className="text-xs text-[#B3B7CF] font-body mb-6 leading-relaxed flex-grow">{challenge.short_description || challenge.shortDescription || challenge.description.substring(0, 100) + '...'}</p>
                 <div className="mt-auto flex justify-between items-center">
-                  <span className={`${challenge.difficulty === 'Hard' ? 'bg-[#FF003C]/20 text-[#FF003C]' : 'bg-[#00F0FF]/10 text-[#00F0FF]'} px-2 py-1 text-[9px] font-headline uppercase`}>
+                  <span className={`${challenge.difficulty === 'Hard' || challenge.difficulty === 'hard' ? 'bg-[#FF003C]/20 text-[#FF003C]' : 'bg-[#00F0FF]/10 text-[#00F0FF]'} px-2 py-1 text-[9px] font-headline uppercase`}>
                     {challenge.difficulty} // 100XP
                   </span>
-                  <span className={`text-[10px] font-body uppercase ${challenge.difficulty === 'Hard' ? 'text-[#FF003C] font-bold' : 'text-[#B3B7CF]'}`}>
+                  <span className={`text-[10px] font-body uppercase ${challenge.difficulty === 'Hard' || challenge.difficulty === 'hard' ? 'text-[#FF003C] font-bold' : 'text-[#B3B7CF]'}`}>
                     ACTIVE
                   </span>
                 </div>
@@ -110,40 +140,50 @@ export default function HomePage() {
             <div>
               <div className="flex justify-between items-end mb-2">
                 <span className="font-headline text-[10px] text-[#B3B7CF] uppercase">CURRENT_ELO</span>
-                <span className="font-headline text-2xl font-black text-white">2450</span>
+                <span className="font-headline text-2xl font-black text-white">{isAuthenticated ? profile?.elo_rating : '----'}</span>
               </div>
               <div className="h-1 bg-surface-container-low w-full">
-                <div className="h-full bg-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.5)]" style={{ width: '82%' }}></div>
+                <div 
+                  className="h-full bg-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.5)] transition-all duration-1000" 
+                  style={{ width: isAuthenticated ? `${Math.min((profile?.elo_rating / 3000) * 100, 100)}%` : '0%' }}
+                ></div>
               </div>
               <div className="flex justify-between mt-1 text-[9px] text-[#00F0FF]/50 font-headline uppercase">
-                <span>RANK: ELITE</span>
+                <span>RANK: {isAuthenticated ? (profile?.elo_rating > 2000 ? 'ELITE' : 'OPERATIVE') : 'UNRANKED'}</span>
                 <span>GOAL: 3000 (GRANDMASTER)</span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-[#131316] border border-[#00F0FF]/5">
                 <div className="text-[9px] font-headline text-[#B3B7CF] mb-1 uppercase">STREAK</div>
-                <div className="text-lg font-headline text-white uppercase">12_DAYS</div>
+                <div className="text-lg font-headline text-white uppercase">{isAuthenticated ? '1_DAY' : '0_DAYS'}</div>
               </div>
               <div className="p-3 bg-[#131316] border border-[#00F0FF]/5">
                 <div className="text-[9px] font-headline text-[#B3B7CF] mb-1 uppercase">ACCURACY</div>
-                <div className="text-lg font-headline text-white">94.8%</div>
+                <div className="text-lg font-headline text-white">{isAuthenticated ? '98.2%' : '0.0%'}</div>
               </div>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-[11px] font-body p-2 border border-[#00F0FF]/5 bg-surface-container-lowest uppercase">
-                <span className="text-[#B3B7CF]">SYSTEM_STABILITY</span>
-                <span className="text-[#00F0FF]">OPTIMAL</span>
+            
+            {!isAuthenticated ? (
+              <Link 
+                href="/login" 
+                className="w-full bg-[#00F0FF] text-[#131316] font-headline text-xs py-3 font-bold tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2 uppercase"
+              >
+                <span className="material-symbols-outlined text-sm">login</span>
+                AUTHENTICATE_SESSION
+              </Link>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-[11px] font-body p-2 border border-[#00F0FF]/5 bg-surface-container-lowest uppercase">
+                  <span className="text-[#B3B7CF]">CONNECTION</span>
+                  <span className="text-[#00F0FF]">SECURE</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] font-body p-2 border border-[#00F0FF]/5 bg-surface-container-lowest uppercase">
+                  <span className="text-[#B3B7CF]">FIREWALL_STATUS</span>
+                  <span className="text-[#00F0FF]">ACTIVE</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-[11px] font-body p-2 border border-[#00F0FF]/5 bg-surface-container-lowest uppercase">
-                <span className="text-[#B3B7CF]">FIREWALL_STATUS</span>
-                <span className="text-[#00F0FF]">ACTIVE</span>
-              </div>
-            </div>
-            <button className="w-full bg-[#FF003C] text-white font-headline text-xs py-3 font-bold tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2 uppercase">
-              <span className="material-symbols-outlined text-sm">sync</span>
-              FORCE_SYNC_LOGS
-            </button>
+            )}
           </div>
 
           {/* Active Competitors Micro-Grid */}

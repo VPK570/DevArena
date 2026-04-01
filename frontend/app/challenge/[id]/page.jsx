@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useRef, useEffect } from 'react';
+import { use, useState, useRef, useEffect, useMemo } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import challenges from '@/lib/challenges';
@@ -8,16 +8,19 @@ import { getSandboxHTML } from '@/lib/sandbox';
 import MonacoEditor from '@/components/MonacoEditor';
 import FeedbackPanel from '@/components/FeedbackPanel';
 import Timer from '@/components/Timer';
+import { useAuth } from '@/contexts/AuthContext';
+import { createClient } from '@/lib/supabase';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import AIPanel from '@/components/AIPanel';
 
 export default function ChallengePage({ params }) {
   const { id } = use(params);
-  const challenge = challenges.find(c => c.id === id);
-
-  if (!challenge) {
-    notFound();
-  }
-
-  const [code, setCode] = useState(challenge.starterCode);
+  const { user, profile, isAuthenticated } = useAuth();
+  const supabase = useMemo(() => createClient(), []);
+  
+  const [challenge, setChallenge] = useState(null);
+  const [loadingChallenge, setLoadingChallenge] = useState(true);
+  const [code, setCode] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [isRunningTimer, setIsRunningTimer] = useState(true);
   const [viewMode, setViewMode] = useState("sandbox"); // sandbox, loading, feedback
@@ -25,11 +28,90 @@ export default function ChallengePage({ params }) {
   const [feedbackData, setFeedbackData] = useState(null);
   const [error, setError] = useState(null);
   const [terminalLogs, setTerminalLogs] = useState([]);
+  const [aiPanel, setAiPanel] = useState({ open: false, loading: false, content: null, type: null });
+  const [hintsRemaining, setHintsRemaining] = useState(3);
   const iframeRef = useRef(null);
 
   useEffect(() => {
+    async function fetchChallenge() {
+      console.log("[DEBUG] Fetching challenge for ID:", id);
+      console.log("[DEBUG] Supabase client status:", !!supabase);
+      
+      setLoadingChallenge(true);
+
+      if (!supabase) {
+        console.warn("[DEBUG] Supabase not initialized. Using static fallback.");
+        const staticChallenge = challenges.find(c => c.id === id);
+        if (staticChallenge) {
+          setChallenge(staticChallenge);
+          setCode(staticChallenge.starterCode);
+        } else {
+          setError("CHALLENGE_NOT_FOUND");
+        }
+        setLoadingChallenge(false);
+        return;
+      }
+
+      try {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        const query = supabase.from('challenges').select('*');
+        if (isUUID) {
+          query.eq('id', id);
+        } else {
+          query.eq('slug', id);
+        }
+        const { data, error: dbError } = await query.single();
+        
+        if (data && !dbError) {
+          console.log("[DEBUG] Challenge found in DB");
+          setChallenge(data);
+          setCode(data.starter_code || "");
+        } else {
+          console.warn("[DEBUG] Challenge not in DB, falling back to static", dbError);
+          throw new Error("DB_NOT_FOUND");
+        }
+      } catch (err) {
+        const staticChallenge = challenges.find(c => c.id === id);
+        if (staticChallenge) {
+          setChallenge(staticChallenge);
+          setCode(staticChallenge.starterCode);
+        } else {
+          setError("CHALLENGE_NOT_FOUND");
+        }
+      } finally {
+        setLoadingChallenge(false);
+      }
+    }
+    fetchChallenge();
+  }, [id, supabase]);
+
+  // AUTO-SAVE SYSTEM
+  useAutoSave(challenge?.id, code, isAuthenticated);
+
+  // LOAD DRAFT ON MOUNT
+  useEffect(() => {
+    async function loadDraft() {
+      if (isAuthenticated && user && challenge) {
+        try {
+          const res = await fetch(`/api/drafts/${challenge.slug || challenge.id}`);
+          const draftData = await res.json();
+          if (draftData.code && draftData.code.trim()) {
+            setCode(draftData.code);
+            setTerminalLogs(prev => [
+              ...prev, 
+              { type: 'log', message: `DRAFTS_RESTORED // Last saved: ${new Date(draftData.updatedAt).toLocaleString()}` }
+            ]);
+          }
+        } catch (e) {
+          console.warn("Draft restore skipped:", e);
+        }
+      }
+    }
+    loadDraft();
+  }, [isAuthenticated, user, challenge]);
+
+  useEffect(() => {
     const handleMessage = (event) => {
-      // Only listen to messages from our specific sandbox
       if (event.data?.source === 'battle-front-sandbox') {
         setTerminalLogs(prevLogs => [
           ...prevLogs, 
@@ -42,7 +124,22 @@ export default function ChallengePage({ params }) {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  const handleResetCode = () => setCode(challenge.starterCode);
+  if (loadingChallenge) {
+    return (
+      <div className="lg:ml-64 pt-14 h-screen bg-[#131316] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-t-2 border-l-2 border-[#00F0FF] animate-spin"></div>
+          <span className="text-[#00F0FF] font-headline text-xs tracking-widest uppercase">Initializing_Arena_Protocol...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!challenge && !loadingChallenge) {
+    notFound();
+  }
+
+  const handleResetCode = () => setCode(challenge.starter_code || challenge.starterCode);
 
   const handleRun = () => {
     setTerminalLogs([]); 
@@ -59,39 +156,91 @@ export default function ChallengePage({ params }) {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/evaluate', { 
+      const response = await fetch('/api/submit', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId: challenge.id, code: code })
+        body: JSON.stringify({ 
+          challengeId: challenge.slug || challenge.id, 
+          code,
+          language: 'javascript'
+        })
       });
 
-      // PATCH: Explicitly catch API limits and server crashes
       if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error("GEMINI_QUOTA_EXCEEDED: Free tier limit reached. Please wait 60s.");
-        } else if (response.status === 502) {
-          throw new Error("BAD_GATEWAY: AI service is currently unreachable.");
-        }
-        throw new Error(`SYSTEM_ERROR: Network returned ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `SERVER_ERROR_${response.status}`);
       }
 
-      // Only parse JSON if the response was successful
       const data = await response.json();
       setFeedbackData(data);
       setViewMode("feedback");
+      console.log("SUBMISSION_PERSISTED_SUCCESSFULLY");
 
     } catch (error) {
-      console.error("Oracle connection failed:", error);
-      
-      // PATCH: Send the error to your in-game terminal instead of crashing React
+      console.error("Submission failed:", error);
       setTerminalLogs(prev => [...prev, { 
         type: 'error', 
-        message: `[ORACLE_LINK_SEVERED] ${error.message}` 
+        message: `[TRANSMISSION_FAILED] ${error.message}` 
       }]);
-      
-      // PATCH: Revert to the sandbox view so the user isn't stuck on a loading screen
       setViewMode("sandbox"); 
       setIsRunningTimer(true);
+    }
+  };
+
+  const handleRequestHint = async () => {
+    if (hintsRemaining <= 0) {
+      setTerminalLogs(prev => [...prev, { type: 'error', message: '[ACCESS_DENIED] All hints for this session have been used.' }]);
+      return;
+    }
+
+    setAiPanel({ open: true, loading: true, content: null, type: 'hint' });
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hint`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: challenge.slug || challenge.id,
+          userCode: code
+        })
+      });
+
+      if (!res.ok) throw new Error('HINT_MODULE_OFFLINE');
+
+      const data = await res.json();
+      setAiPanel({ open: true, loading: false, content: data, type: 'hint' });
+      setHintsRemaining(prev => prev - 1);
+    } catch (err) {
+      setAiPanel({ open: false, loading: false, content: null, type: null });
+      setTerminalLogs(prev => [...prev, { type: 'error', message: `[AI_LINK_SEVERED] ${err.message}` }]);
+    }
+  };
+
+  const handleExplainCode = async () => {
+    if (!code.trim()) {
+      setTerminalLogs(prev => [...prev, { type: 'error', message: '[EXPLAIN_ERROR] No code detected for analysis.' }]);
+      return;
+    }
+
+    setAiPanel({ open: true, loading: true, content: null, type: 'explain' });
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/explain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challengeId: challenge.slug || challenge.id,
+          code: code
+        })
+      });
+
+      if (!res.ok) throw new Error('ANALYSIS_MODULE_OFFLINE');
+
+      const data = await res.json();
+      setAiPanel({ open: true, loading: false, content: data, type: 'explain' });
+    } catch (err) {
+      setAiPanel({ open: false, loading: false, content: null, type: null });
+      setTerminalLogs(prev => [...prev, { type: 'error', message: `[AI_LINK_SEVERED] ${err.message}` }]);
     }
   };
 
@@ -102,56 +251,75 @@ export default function ChallengePage({ params }) {
     setSandboxContent("");
     setSeconds(0);
     setIsRunningTimer(true);
+    setAiPanel({ open: false, loading: false, content: null, type: null });
   };
 
   const handleAbort = () => {
     const isConfirmed = window.confirm("WARNING: This will wipe your current code and reset to base parameters. Proceed?");
     if (isConfirmed) {
-      setCode(challenge.starterCode);
+      setCode(challenge.starter_code || challenge.starterCode);
       setTerminalLogs([{ type: 'log', message: 'SYSTEM_RESET_INITIATED. Code restored to base parameters.' }]);
       setSandboxContent("");
     }
   };
 
   return (
-    <main className="lg:ml-64 pt-14 h-screen flex flex-col md:flex-row overflow-hidden bg-surface">
+    <main className="lg:ml-64 pt-14 h-screen flex flex-col md:flex-row overflow-hidden bg-surface relative">
+      {aiPanel.open && (
+        <AIPanel 
+          type={aiPanel.type}
+          loading={aiPanel.loading}
+          content={aiPanel.content}
+          onClose={() => setAiPanel({ open: false, loading: false, content: null, type: null })}
+        />
+      )}
       {/* Left Pane: Problem Description */}
       <section className="w-full md:w-1/4 h-full bg-surface-container-lowest border-r border-outline-variant/15 overflow-y-auto flex flex-col">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-2">
-            <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 text-[10px] font-label font-bold tracking-widest uppercase">HARDWARE_LVL_{challenge.difficulty === 'Easy' ? '1' : challenge.difficulty === 'Medium' ? '4' : '7'}</span>
-            <span className="text-primary-container font-label text-[10px]">#{challenge.id.substring(0,6).toUpperCase()}</span>
+            <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 text-[10px] font-label font-bold tracking-widest uppercase">HARDWARE_LVL_{challenge.difficulty.toString().toUpperCase() === 'EASY' ? '1' : challenge.difficulty.toString().toUpperCase() === 'MEDIUM' ? '4' : '7'}</span>
+            <span className="text-primary-container font-label text-[10px]">#{challenge.id.toString().substring(0,6).toUpperCase()}</span>
           </div>
           <h1 className="text-2xl font-bold font-headline text-white mb-6 leading-tight tracking-tight uppercase truncate">{challenge.title}</h1>
           
           <div className="space-y-6">
             <div className="text-on-secondary-container font-body text-xs leading-relaxed space-y-4">
-               <p className="whitespace-pre-wrap">{challenge.description}</p>
+               <div className="whitespace-pre-wrap prose prose-invert prose-xs max-w-none">
+                 {challenge.description}
+               </div>
             </div>
 
-            <div className="bg-surface p-4 border-l-2 border-primary-container/30">
-              <h4 className="font-label text-[10px] text-primary-container uppercase mb-2">Technical Constraints</h4>
-              <ul className="list-none p-0 m-0 space-y-1 text-xs">
-                {challenge.constraints.map((c, i) => (
-                   <li key={i} className="flex items-start gap-2 text-on-surface-variant">
-                     <span className="text-primary-container opacity-50">/</span> {c}
-                   </li>
-                ))}
-              </ul>
-            </div>
+            {(challenge.constraints || challenge.hints) && (
+              <div className="space-y-4">
+                {challenge.constraints && (
+                  <div className="bg-surface p-4 border-l-2 border-primary-container/30">
+                    <h4 className="font-label text-[10px] text-primary-container uppercase mb-2">Technical Constraints</h4>
+                    <ul className="list-none p-0 m-0 space-y-1 text-xs">
+                      {challenge.constraints.map((c, i) => (
+                         <li key={i} className="flex items-start gap-2 text-on-surface-variant">
+                           <span className="text-primary-container opacity-50">/</span> {c}
+                         </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-            <details className="group bg-surface-container-low/30 border border-outline-variant/10 rounded-none">
-              <summary className="cursor-pointer p-3 font-label text-[10px] text-primary-container uppercase tracking-widest hover:bg-primary-container/5 transition-colors">
-                Decrypt_Hints
-              </summary>
-              <div className="p-4 pt-0 text-[10px] font-body text-[#B3B7CF] space-y-2 border-t border-outline-variant/10">
-                <ul className="list-disc list-inside space-y-2">
-                  {challenge.hints.map((hint, idx) => (
-                    <li key={idx}>{hint}</li>
-                  ))}
-                </ul>
+                {challenge.hints && (
+                  <details className="group bg-surface-container-low/30 border border-outline-variant/10 rounded-none">
+                    <summary className="cursor-pointer p-3 font-label text-[10px] text-primary-container uppercase tracking-widest hover:bg-primary-container/5 transition-colors">
+                      Decrypt_Hints
+                    </summary>
+                    <div className="p-4 pt-0 text-[10px] font-body text-[#B3B7CF] space-y-2 border-t border-outline-variant/10">
+                      <ul className="list-disc list-inside space-y-2">
+                        {challenge.hints.map((hint, idx) => (
+                          <li key={idx}>{hint}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </details>
+                )}
               </div>
-            </details>
+            )}
           </div>
         </div>
         
@@ -222,17 +390,32 @@ export default function ChallengePage({ params }) {
               
               <div className="flex gap-4">
                 <button 
+                  onClick={handleRequestHint}
+                  disabled={hintsRemaining <= 0}
+                  className="px-4 py-2 border border-purple-500/50 text-purple-400 font-headline text-[10px] tracking-widest hover:border-purple-400 hover:bg-purple-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all uppercase flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-xs">psychology</span>
+                  HINT [{hintsRemaining}/3]
+                </button>
+                <button 
+                  onClick={handleExplainCode}
+                  className="px-4 py-2 border border-amber-500/50 text-amber-400 font-headline text-[10px] tracking-widest hover:border-amber-400 hover:bg-amber-500/10 transition-all uppercase flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-xs">bolt</span>
+                  EXPLAIN
+                </button>
+                <button 
                   onClick={handleRun}
                   className="px-6 py-2 border border-outline-variant text-outline font-headline text-[10px] font-bold tracking-widest hover:border-primary-container hover:text-primary-container transition-all uppercase"
                 >
-                  PREVIEW_EXECUTION
+                  PREVIEW
                 </button>
                 <button 
                   onClick={submitToOracle}
                   disabled={viewMode === "loading"}
                   className="px-8 py-2 bg-primary-container text-on-primary-container font-headline text-[10px] font-bold tracking-[0.2em] shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all uppercase"
                 >
-                  {viewMode === "loading" ? "Awaiting Oracle..." : "INITIATE_JUDGMENT"}
+                  {viewMode === "loading" ? "JUDGING..." : "INITIATE_JUDGMENT"}
                 </button>
               </div>
             </div>
