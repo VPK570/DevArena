@@ -1,9 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 
-// Routes that require authentication
-const PROTECTED_ROUTES = ["/profile", "/settings", "/solution"];
-
+// Global middleware logic below
 export async function middleware(request) {
   let response = NextResponse.next({ request });
 
@@ -33,9 +31,10 @@ export async function middleware(request) {
   } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
-  const isProtected = PROTECTED_ROUTES.some((r) => path.startsWith(r));
+  // Allow login page and API routes
+  const isPublicRoute = path === "/login" || path.startsWith("/api");
 
-  if (isProtected && !user) {
+  if (!user && !isPublicRoute) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
