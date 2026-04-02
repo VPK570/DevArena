@@ -1,19 +1,22 @@
 from pydantic import BaseModel
 
-
 # ── Exceptions ──────────────────────────────────────────────────────────────
+
 
 class ChallengeNotFoundError(Exception):
     """Raised when a challengeId does not exist in the data store."""
+
     pass
 
 
 class RateLimitError(Exception):
     """Raised when the AI provider returns a 429."""
+
     pass
 
 
 # ── /api/evaluate ───────────────────────────────────────────────────────────
+
 
 class EvaluateRequest(BaseModel):
     code: str
@@ -36,6 +39,7 @@ class EvaluateResponse(BaseModel):
 
 # ── /api/solution ───────────────────────────────────────────────────────────
 
+
 class SolutionRequest(BaseModel):
     challengeId: str
     userCode: str
@@ -54,6 +58,7 @@ class SolutionResponse(BaseModel):
 
 # ── /api/hint ───────────────────────────────────────────────────────────────
 
+
 class HintRequest(BaseModel):
     challengeId: str
     userCode: str  # current code state, can be partial
@@ -65,6 +70,7 @@ class HintResponse(BaseModel):
 
 
 # ── /api/explain ────────────────────────────────────────────────────────────
+
 
 class ExplainRequest(BaseModel):
     code: str
@@ -83,6 +89,7 @@ class ExplainResponse(BaseModel):
 
 
 # ── Error envelope ──────────────────────────────────────────────────────────
+
 
 class ErrorResponse(BaseModel):
     error: str

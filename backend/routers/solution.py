@@ -2,7 +2,12 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from models.schemas import SolutionRequest, SolutionResponse, ErrorResponse, RateLimitError
+from models.schemas import (
+    SolutionRequest,
+    SolutionResponse,
+    ErrorResponse,
+    RateLimitError,
+)
 from data.challenges import get_challenge
 from services.gemini_service import generate_solution
 
@@ -26,7 +31,10 @@ async def solution(request: SolutionRequest):
     if not challenge:
         raise HTTPException(
             status_code=400,
-            detail={"error": "Unknown challenge", "detail": f"challengeId '{request.challengeId}' not found"},
+            detail={
+                "error": "Unknown challenge",
+                "detail": f"challengeId '{request.challengeId}' not found",
+            },
         )
 
     try:
@@ -44,9 +52,12 @@ async def solution(request: SolutionRequest):
             status_code=502,
             detail={"error": "AI solution generation failed", "detail": str(exc)},
         )
-    except Exception as exc:
+    except Exception:
         logger.exception("Unexpected error in /api/solution")
         raise HTTPException(
             status_code=500,
-            detail={"error": "Internal server error", "detail": "An unexpected error occurred"},
+            detail={
+                "error": "Internal server error",
+                "detail": "An unexpected error occurred",
+            },
         )

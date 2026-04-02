@@ -26,13 +26,19 @@ async def hint(request: HintRequest):
     if not challenge:
         raise HTTPException(
             status_code=400,
-            detail={"error": "Unknown challenge", "detail": f"challengeId '{request.challengeId}' not found"},
+            detail={
+                "error": "Unknown challenge",
+                "detail": f"challengeId '{request.challengeId}' not found",
+            },
         )
 
     if not request.userCode.strip():
         raise HTTPException(
             status_code=400,
-            detail={"error": "Empty code", "detail": "Submit at least a few lines of code to get a hint"},
+            detail={
+                "error": "Empty code",
+                "detail": "Submit at least a few lines of code to get a hint",
+            },
         )
 
     try:
@@ -50,9 +56,12 @@ async def hint(request: HintRequest):
             status_code=502,
             detail={"error": "AI hint generation failed", "detail": str(exc)},
         )
-    except Exception as exc:
+    except Exception:
         logger.exception("Unexpected error in /api/hint")
         raise HTTPException(
             status_code=500,
-            detail={"error": "Internal server error", "detail": "An unexpected error occurred"},
+            detail={
+                "error": "Internal server error",
+                "detail": "An unexpected error occurred",
+            },
         )

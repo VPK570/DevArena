@@ -1,8 +1,8 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse } from "next/server";
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ['/profile', '/settings']
+const PROTECTED_ROUTES = ["/profile", "/settings"];
 
 export async function middleware(request) {
   let response = NextResponse.next({ request });
@@ -28,13 +28,15 @@ export async function middleware(request) {
     },
   });
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
   const isProtected = PROTECTED_ROUTES.some((r) => path.startsWith(r));
 
   if (isProtected && !user) {
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -42,5 +44,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
-}
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+};

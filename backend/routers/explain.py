@@ -2,7 +2,12 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from models.schemas import ExplainRequest, ExplainResponse, ErrorResponse, RateLimitError
+from models.schemas import (
+    ExplainRequest,
+    ExplainResponse,
+    ErrorResponse,
+    RateLimitError,
+)
 from data.challenges import get_challenge
 from services.gemini_service import explain_code
 
@@ -26,7 +31,10 @@ async def explain(request: ExplainRequest):
     if not challenge:
         raise HTTPException(
             status_code=400,
-            detail={"error": "Unknown challenge", "detail": f"challengeId '{request.challengeId}' not found"},
+            detail={
+                "error": "Unknown challenge",
+                "detail": f"challengeId '{request.challengeId}' not found",
+            },
         )
 
     if not request.code.strip():
@@ -50,9 +58,12 @@ async def explain(request: ExplainRequest):
             status_code=502,
             detail={"error": "AI explanation failed", "detail": str(exc)},
         )
-    except Exception as exc:
+    except Exception:
         logger.exception("Unexpected error in /api/explain")
         raise HTTPException(
             status_code=500,
-            detail={"error": "Internal server error", "detail": "An unexpected error occurred"},
+            detail={
+                "error": "Internal server error",
+                "detail": "An unexpected error occurred",
+            },
         )

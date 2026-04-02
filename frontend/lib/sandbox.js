@@ -1,9 +1,9 @@
 export function getSandboxHTML(code) {
   // Strip import statements (browser can't handle them in script tags)
   const cleanCode = code
-    .replace(/^import\s+.*?from\s+['"][^'"]+['"]\s*;?\s*/gm, '')
-    .replace(/^export\s+default\s+/gm, '')
-    .replace(/^export\s+/gm, '');
+    .replace(/^import\s+.*?from\s+['"][^'"]+['"]\s*;?\s*/gm, "")
+    .replace(/^export\s+default\s+/gm, "")
+    .replace(/^export\s+/gm, "");
 
   return `<!DOCTYPE html>
 <html>

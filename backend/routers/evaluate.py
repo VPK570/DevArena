@@ -1,7 +1,12 @@
 import logging
 
 from fastapi import APIRouter, HTTPException
-from models.schemas import EvaluateRequest, EvaluateResponse, ErrorResponse, RateLimitError
+from models.schemas import (
+    EvaluateRequest,
+    EvaluateResponse,
+    ErrorResponse,
+    RateLimitError,
+)
 from data.challenges import get_challenge
 from services.gemini_service import evaluate_code
 
@@ -26,7 +31,10 @@ async def evaluate(request: EvaluateRequest):
     if not challenge:
         raise HTTPException(
             status_code=400,
-            detail={"error": "Unknown challenge", "detail": f"challengeId '{request.challengeId}' not found"},
+            detail={
+                "error": "Unknown challenge",
+                "detail": f"challengeId '{request.challengeId}' not found",
+            },
         )
 
     try:

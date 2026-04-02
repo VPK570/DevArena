@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 export function useAutoSave(challengeId, code, isAuthenticated) {
   const lastSavedCodeRef = useRef(code);
@@ -21,18 +21,18 @@ export function useAutoSave(challengeId, code, isAuthenticated) {
     // Set new timeout for 30 seconds
     timeoutRef.current = setTimeout(async () => {
       try {
-        const response = await fetch('/api/drafts/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ challengeId, code })
+        const response = await fetch("/api/drafts/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ challengeId, code }),
         });
-        
+
         if (response.ok) {
           lastSavedCodeRef.current = code;
-          console.log('[AUTO_SAVE] Draft synced successfully.');
+          console.log("[AUTO_SAVE] Draft synced successfully.");
         }
       } catch (err) {
-        console.warn('[AUTO_SAVE] Sync failed:', err);
+        console.warn("[AUTO_SAVE] Sync failed:", err);
       }
     }, 30000);
 
@@ -53,7 +53,7 @@ export function useAutoSave(challengeId, code, isAuthenticated) {
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [code, challengeId, isAuthenticated]);
 }

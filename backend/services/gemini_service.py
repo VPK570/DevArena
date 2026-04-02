@@ -8,22 +8,22 @@ using plain HTTP requests and return parsed dicts.
 import json
 import logging
 import os
-import re
 
 import requests
 
 from models.schemas import RateLimitError
 from data.challenges import get_challenge, apply_difficulty_scaling, derive_verdict
 
-logger = logging.getLogger(__name__)
-
 from dotenv import load_dotenv
+
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # ── OpenRouter config ────────────────────────────────────────────────────────
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_MODEL   = "openrouter/free"
+OPENROUTER_MODEL = "openrouter/free"
 
 
 def _chat(system: str, user: str) -> str:
@@ -43,7 +43,7 @@ def _chat(system: str, user: str) -> str:
         "model": OPENROUTER_MODEL,
         "messages": [
             {"role": "system", "content": system},
-            {"role": "user",   "content": user},
+            {"role": "user", "content": user},
         ],
     }
 
@@ -51,7 +51,11 @@ def _chat(system: str, user: str) -> str:
 
     if resp.status_code == 429:
         # Extract the real error from OpenRouter if available
-        remote_error = resp.json().get('error', {}).get('message', 'Local or Provider rate limit hit')
+        remote_error = (
+            resp.json()
+            .get("error", {})
+            .get("message", "Local or Provider rate limit hit")
+        )
         raise RateLimitError(remote_error)
     if not resp.ok:
         raise RuntimeError(
@@ -64,14 +68,25 @@ def _chat(system: str, user: str) -> str:
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
+
 def parse_json_response(text: str) -> dict:
-    """Strip markdown fences and parse JSON from model output."""
-    clean = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
-    clean = re.sub(r"```\s*$", "", clean.strip(), flags=re.MULTILINE)
+    """Find the first { and last } to extract JSON, stripping markdown or filler."""
     try:
-        return json.loads(clean.strip())
+        # Find the first '{' and last '}'
+        start = text.find("{")
+        end = text.rfind("}")
+
+        if start == -1 or end == -1:
+            raise ValueError("No JSON object found in response")
+
+        json_str = text[start : end + 1]
+        return json.loads(json_str)
     except json.JSONDecodeError as exc:
+        logger.error("JSON parsing failed. Raw text: %s", text)
         raise ValueError(f"Model returned malformed JSON: {exc}") from exc
+    except Exception as exc:
+        logger.error("Error extracting JSON. Raw text: %s", text)
+        raise ValueError(f"Could not extract JSON: {exc}") from exc
 
 
 def _build_challenge_context(challenge: dict) -> str:
@@ -86,6 +101,7 @@ def _build_challenge_context(challenge: dict) -> str:
 
 
 # ── 1. Evaluate Code ───────────────────────────────────────────────────────
+
 
 def evaluate_code(code: str, challenge_id: str) -> dict:
     """Evaluate submitted code against challenge criteria. Returns dict."""
@@ -126,7 +142,8 @@ def evaluate_code(code: str, challenge_id: str) -> dict:
         try:
             logger.info(
                 "OpenRouter call | func=evaluate_code | challenge=%s | attempt=%d",
-                challenge_id, attempt + 1,
+                challenge_id,
+                attempt + 1,
             )
             text = _chat(system_prompt, user_prompt)
             data = parse_json_response(text)
@@ -141,7 +158,10 @@ def evaluate_code(code: str, challenge_id: str) -> dict:
 
             logger.info(
                 "OpenRouter response | challenge=%s | raw=%d | adjusted=%d | verdict=%s",
-                challenge_id, raw_score, adjusted_score, final_verdict,
+                challenge_id,
+                raw_score,
+                adjusted_score,
+                final_verdict,
             )
 
             return {
@@ -167,28 +187,29 @@ def evaluate_code(code: str, challenge_id: str) -> dict:
 
 # ── 2. Generate Solution ───────────────────────────────────────────────────
 
+
 def generate_solution(challenge_id: str, user_code: str) -> dict:
     """Generate a corrected solution based on the user's code."""
     challenge = get_challenge(challenge_id)
     if not challenge:
         raise ValueError(f"Unknown challenge: {challenge_id}")
 
-    logger.info("generate_solution | challenge=%s | code_len=%d", challenge_id, len(user_code))
+    logger.info(
+        "generate_solution | challenge=%s | code_len=%d", challenge_id, len(user_code)
+    )
 
     system_prompt = (
         "You are an expert JavaScript/React developer.\n"
-        "Take the user's code as a base and return a corrected, complete version.\n"
-        "Add inline JS comments on every changed or added line: // CHANGED: reason\n"
-        "Never rewrite from scratch — build on what the user wrote.\n"
-        "Always respond with ONLY valid JSON. No markdown. No explanation outside JSON.\n\n"
-        "Use this exact JSON structure:\n"
+        "Return a corrected and optimized version of the user's code.\n"
+        "Always build on the user's existing work where possible.\n"
+        "Respond with ONLY a single JSON object. No explanation text outside JSON.\n\n"
+        "### JSON Structure:\n"
         "{\n"
-        '  "solution": "<corrected JS code as a string>",\n'
-        '  "explanation": "<2-3 sentence summary of what was changed and why>",\n'
-        '  "comments": [\n'
-        '    { "line": <int>, "comment": "<what was changed on this line>" }\n'
-        "  ]\n"
-        "}"
+        '  "solution": "<the corrected JS/React code>",\n'
+        '  "explanation": "<brief summary of your improvements>",\n'
+        '  "comments": []\n'
+        "}\n\n"
+        "IMPORTANT: You MUST escape newlines and quotes correctly inside the code string."
     )
 
     user_prompt = (
@@ -196,26 +217,42 @@ def generate_solution(challenge_id: str, user_code: str) -> dict:
         f"--- User's Code ---\n{user_code}\n---"
     )
 
-    try:
-        logger.info("OpenRouter call | func=generate_solution | challenge=%s", challenge_id)
-        text = _chat(system_prompt, user_prompt)
-        data = parse_json_response(text)
-        return {
-            "solution": data.get("solution", ""),
-            "explanation": data.get("explanation", ""),
-            "comments": data.get("comments", []),
-        }
-    except ValueError as exc:
-        logger.exception("JSON parse failed in generate_solution: %s", exc)
-        raise RuntimeError("Failed to parse AI solution response.") from exc
-    except RuntimeError:
-        raise
-    except Exception as exc:
-        logger.exception("OpenRouter API error in generate_solution: %s", exc)
-        raise RuntimeError("AI solution generation failed. Please try again.") from exc
+    last_error = None
+    for attempt in range(2):
+        try:
+            logger.info(
+                "OpenRouter call | func=generate_solution | challenge=%s | attempt=%d",
+                challenge_id,
+                attempt + 1,
+            )
+            text = _chat(system_prompt, user_prompt)
+            data = parse_json_response(text)
+            return {
+                "solution": data.get("solution", ""),
+                "explanation": data.get("explanation", ""),
+                "comments": data.get("comments", []),
+            }
+        except ValueError as exc:
+            last_error = exc
+            logger.warning(
+                "JSON parse failed for generate_solution (attempt %d): %s",
+                attempt + 1,
+                exc,
+            )
+            continue
+        except RuntimeError:
+            raise
+        except Exception as exc:
+            logger.exception("OpenRouter API error in generate_solution: %s", exc)
+            raise RuntimeError(
+                "AI solution generation failed. Please try again."
+            ) from exc
+
+    raise RuntimeError(f"Failed to generate solution after retries: {last_error}")
 
 
 # ── 3. Generate Hint ───────────────────────────────────────────────────────
+
 
 def generate_hint(challenge_id: str, user_code: str) -> dict:
     """Generate one actionable hint without giving the answer away."""
@@ -223,7 +260,9 @@ def generate_hint(challenge_id: str, user_code: str) -> dict:
     if not challenge:
         raise ValueError(f"Unknown challenge: {challenge_id}")
 
-    logger.info("generate_hint | challenge=%s | code_len=%d", challenge_id, len(user_code))
+    logger.info(
+        "generate_hint | challenge=%s | code_len=%d", challenge_id, len(user_code)
+    )
 
     system_prompt = (
         "You are a helpful coding mentor for frontend challenges.\n"
@@ -263,6 +302,7 @@ def generate_hint(challenge_id: str, user_code: str) -> dict:
 
 
 # ── 4. Explain Code ────────────────────────────────────────────────────────
+
 
 def explain_code(code: str, challenge_id: str) -> dict:
     """Explain submitted code line by line."""
