@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { BrainCircuit, Zap, X, Code, Lightbulb } from "lucide-react";
 
 export default function AIPanel({ type, loading, content, onClose }) {
   return (
@@ -16,11 +17,11 @@ export default function AIPanel({ type, loading, content, onClose }) {
                       justify-between px-4 bg-[#131316]"
       >
         <div className="flex items-center gap-2">
-          <span
-            className={`material-symbols-outlined text-sm ${type === "hint" ? "text-purple-400" : "text-amber-400"}`}
-          >
-            {type === "hint" ? "psychology" : "bolt"}
-          </span>
+          {type === "hint" ? (
+            <BrainCircuit className="w-4 h-4 text-purple-400" />
+          ) : (
+            <Zap className="w-4 h-4 text-amber-400" />
+          )}
           <span className="font-headline text-[10px] text-white tracking-widest uppercase">
             {type === "hint" ? "AI_HINT_MODULE" : "CODE_ANALYSIS"}
           </span>
@@ -29,7 +30,7 @@ export default function AIPanel({ type, loading, content, onClose }) {
           onClick={onClose}
           className="text-[#B3B7CF] hover:text-white transition-all transform hover:rotate-90"
         >
-          <span className="material-symbols-outlined text-sm">close</span>
+          <X className="w-4 h-4" />
         </button>
       </div>
 
@@ -39,9 +40,7 @@ export default function AIPanel({ type, loading, content, onClose }) {
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <div className="w-16 h-16 border border-purple-500/30 flex items-center justify-center relative">
               <div className="absolute inset-0 border border-purple-400 animate-ping opacity-20"></div>
-              <span className="material-symbols-outlined text-3xl text-purple-400 animate-pulse">
-                deployed_code
-              </span>
+              <Code className="w-8 h-8 text-purple-400 animate-pulse" />
             </div>
             <p className="font-headline text-[10px] text-purple-400 tracking-[0.2em] animate-pulse uppercase">
               Neural_Analysis_In_Progress...
@@ -60,9 +59,7 @@ export default function AIPanel({ type, loading, content, onClose }) {
             </div>
             <div className="bg-[#131316] border-l-2 border-purple-500/50 p-4 relative">
               <div className="absolute top-0 right-0 p-1 opacity-10">
-                <span className="material-symbols-outlined text-4xl">
-                  lightbulb
-                </span>
+                <Lightbulb className="w-8 h-8" />
               </div>
               <TypingAnimation text={content?.hint} />
             </div>

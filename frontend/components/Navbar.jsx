@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { User, UserCircle, LogOut, Radio, Terminal } from "lucide-react";
 
 export default function Navbar() {
   const { profile, isAuthenticated, signOut, loading } = useAuth();
@@ -63,9 +64,7 @@ export default function Navbar() {
                       src={profile.avatar_url}
                     />
                   ) : (
-                    <span className="material-symbols-outlined text-sm text-[#00F0FF]">
-                      person
-                    </span>
+                    <User className="w-4 h-4 text-[#00F0FF]" />
                   )}
                 </div>
               </button>
@@ -86,9 +85,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 px-3 py-2 text-[11px] text-[#B3B7CF] hover:bg-[#00F0FF]/10 hover:text-white transition-all uppercase font-headline"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      <span className="material-symbols-outlined text-sm">
-                        account_circle
-                      </span>
+                      <UserCircle className="w-4 h-4" />
                       Vitals_Record
                     </Link>
                     <button
@@ -98,9 +95,7 @@ export default function Navbar() {
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-error-container hover:bg-error-container/10 transition-all uppercase font-headline"
                     >
-                      <span className="material-symbols-outlined text-sm">
-                        logout
-                      </span>
+                      <LogOut className="w-4 h-4" />
                       Terminate_Session
                     </button>
                   </div>
@@ -118,10 +113,10 @@ export default function Navbar() {
 
         <div className="flex items-center border-l border-[#00F0FF]/15 pl-4 gap-2 text-[#00F0FF]">
           <button className="p-2 hover:bg-[#00F0FF]/10 transition-all duration-50">
-            <span className="material-symbols-outlined text-sm">sensors</span>
+            <Radio className="w-4 h-4" />
           </button>
           <button className="p-2 hover:bg-[#00F0FF]/10 transition-all duration-50">
-            <span className="material-symbols-outlined text-sm">terminal</span>
+            <Terminal className="w-4 h-4" />
           </button>
         </div>
       </div>

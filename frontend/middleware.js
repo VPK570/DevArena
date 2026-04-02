@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ["/profile", "/settings"];
+const PROTECTED_ROUTES = ["/profile", "/settings", "/solution"];
 
 export async function middleware(request) {
   let response = NextResponse.next({ request });

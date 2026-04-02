@@ -5,6 +5,7 @@ import challenges from "@/lib/challenges";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
+import { GitMerge, Route, ShieldAlert, LogIn } from "lucide-react";
 
 export default function HomePage() {
   const { profile, isAuthenticated, loading } = useAuth();
@@ -22,6 +23,36 @@ export default function HomePage() {
       }
     }
     fetchChallenges();
+  }, [supabase]);
+
+  const [recentTransmissions, setRecentTransmissions] = useState([]);
+
+  useEffect(() => {
+    async function fetchRecent() {
+      if (!supabase) return;
+      const { data } = await supabase
+        .from("submissions")
+        .select("id, created_at, score, verdict, users(username), challenges(title)")
+        .order("created_at", { ascending: false })
+        .limit(4);
+      if (data) setRecentTransmissions(data);
+    }
+    fetchRecent();
+  }, [supabase]);
+
+  const [topOperatives, setTopOperatives] = useState([]);
+
+  useEffect(() => {
+    async function fetchTop() {
+      if (!supabase) return;
+      const { data } = await supabase
+        .from("users")
+        .select("username, elo_rating, avatar_url")
+        .order("elo_rating", { ascending: false })
+        .limit(2);
+      if (data) setTopOperatives(data);
+    }
+    fetchTop();
   }, [supabase]);
 
   // Use DB challenges if available, otherwise fallback to static
@@ -120,15 +151,15 @@ export default function HomePage() {
                 <div
                   className={`mb-4 ${challenge.difficulty === "Hard" || challenge.difficulty === "hard" ? "text-[#FF003C]" : "text-[#00F0FF]"}`}
                 >
-                  <span className="material-symbols-outlined text-3xl">
-                    {challenge.difficulty === "Easy" ||
-                    challenge.difficulty === "easy"
-                      ? "account_tree"
-                      : challenge.difficulty === "Medium" ||
-                          challenge.difficulty === "medium"
-                        ? "route"
-                        : "security"}
-                  </span>
+                  {challenge.difficulty === "Easy" ||
+                  challenge.difficulty === "easy" ? (
+                    <GitMerge className="w-8 h-8" />
+                  ) : challenge.difficulty === "Medium" ||
+                    challenge.difficulty === "medium" ? (
+                    <Route className="w-8 h-8" />
+                  ) : (
+                    <ShieldAlert className="w-8 h-8" />
+                  )}
                 </div>
                 <h3 className="font-headline text-lg font-bold text-white mb-2 tracking-tight">
                   {challenge.title}
@@ -167,44 +198,43 @@ export default function HomePage() {
                 <div>RESULT</div>
               </div>
               <div className="divide-y divide-[#00F0FF]/5">
-                {[
-                  {
-                    time: "14:02:11",
-                    op: "NULL_PTR",
-                    action: "INFILTRATION",
-                    result: "+42 ELO",
-                  },
-                  {
-                    time: "14:01:45",
-                    op: "ROOT_USER",
-                    action: "OPTIMIZATION",
-                    result: "+12 ELO",
-                  },
-                  {
-                    time: "13:59:22",
-                    op: "CYBER_STRIKE",
-                    action: "ABORTED",
-                    result: "-20 ELO",
-                  },
-                ].map((row, i) => (
-                  <div
-                    key={i}
-                    className="grid grid-cols-4 p-3 text-[11px] font-body text-[#B3B7CF] hover:bg-[#00F0FF]/5 transition-colors uppercase"
-                  >
-                    <div>{row.time}</div>
-                    <div className="text-white">{row.op}</div>
-                    <div>{row.action}</div>
+                {recentTransmissions.length > 0 ? (
+                  recentTransmissions.map((row, i) => (
                     <div
-                      className={
-                        row.result.includes("+")
-                          ? "text-[#00F0FF]"
-                          : "text-error-container"
-                      }
+                      key={i}
+                      className="grid grid-cols-4 p-3 text-[11px] font-body text-[#B3B7CF] hover:bg-[#00F0FF]/5 transition-colors uppercase"
                     >
-                      {row.result}
+                      <div>
+                        {new Date(row.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        })}
+                      </div>
+                      <div className="text-white">
+                        {row.users?.username || "ANON_OPERATOR"}
+                      </div>
+                      <div className="truncate pr-4">
+                        {row.challenges?.title || "UNKNOWN_ARENA"}
+                      </div>
+                      <div
+                        className={
+                          row.verdict === "pass"
+                            ? "text-[#00F0FF]"
+                            : row.verdict === "partial"
+                              ? "text-yellow-400"
+                              : "text-[#FF003C]"
+                        }
+                      >
+                        {row.verdict?.toUpperCase()} [{row.score}%]
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-[10px] text-[#B3B7CF]/40 font-headline uppercase text-center">
+                    WAITING_FOR_SATELLITE_LINK...
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -271,7 +301,7 @@ export default function HomePage() {
                 href="/login"
                 className="w-full bg-[#00F0FF] text-[#131316] font-headline text-xs py-3 font-bold tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2 uppercase"
               >
-                <span className="material-symbols-outlined text-sm">login</span>
+                <LogIn className="w-4 h-4" />
                 AUTHENTICATE_SESSION
               </Link>
             ) : (
@@ -294,42 +324,45 @@ export default function HomePage() {
               NEAREST_THREATS
             </h3>
             <div className="space-y-4">
-              {[
-                {
-                  name: "KILL_SWITCH_00",
-                  elo: "2448",
-                  progress: "90%",
-                  img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC5zrFqKaFREaTHOO4CYHVRBwB7f8yEOOhrPofYd1Sm7ykNTP3GilK-2P6PTnK7jvuH8OTGoK3Gvr1qLG0DsR6x2CJ7YQjiK4XdiJsV-iunicPm6fGK3ulfW-pGAQYMZf2ZMCAA4nBvCO26JEuUm28j2hbbcPFYEvBvSfHDFdVryfVrkxS4C98fC3J46J42xee4MulTngYWtSzqTdpHxJR1CbEFHavg_XDKotnsv0TEqZEIAcRJ2MB06RoW3kos4o8alxbZgXWS-1cP",
-                },
-                {
-                  name: "DATA_GHOST",
-                  elo: "2442",
-                  progress: "75%",
-                  img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAWMClZH-lpzZcR3E2fEME21w0Fyiz54Z4IlfqtB7y2mvFPYWWf6j3zDsYkqBhOeSgaBJtHZkiJjv-AugPXjw3OGXYH30orVZ7rn83qbf0kpYjzsVM4m6ERbdl9BVxH04q7iOKK1gMU_CgLaKtUHODga_o0Q78uQ6e8EK5sNk-ksDfBq7fqHs8IA4qYQ0sjJWh5_g_6PX13vjn46t_VLpxxPZOlbwproBISLvAmrFf9BMgC2lmgEl7WeBIdFpwYrvJ0RoHZzEu9W9Wr",
-                },
-              ].map((threat, i) => (
-                <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-8 h-8 bg-[#00F0FF]/10 flex items-center justify-center border border-[#00F0FF]/20 overflow-hidden">
-                    <img
-                      alt={threat.name}
-                      className="w-6 h-6 object-cover"
-                      src={threat.img}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between text-[10px] font-headline text-white">
-                      <span>{threat.name}</span>
-                      <span className="text-[#00F0FF]">{threat.elo} ELO</span>
+              {topOperatives.length > 0 ? (
+                topOperatives.map((threat, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#00F0FF]/10 flex items-center justify-center border border-[#00F0FF]/20 overflow-hidden">
+                      {threat.avatar_url ? (
+                        <img
+                          alt={threat.username}
+                          className="w-full h-full object-cover"
+                          src={threat.avatar_url}
+                        />
+                      ) : (
+                        <div className="text-[#00F0FF] text-[8px] font-headline">
+                          OP_{i + 1}
+                        </div>
+                      )}
                     </div>
-                    <div className="h-0.5 bg-surface-container-low mt-1">
-                      <div
-                        className="h-full bg-tertiary-container"
-                        style={{ width: threat.progress }}
-                      ></div>
+                    <div className="flex-1">
+                      <div className="flex justify-between text-[10px] font-headline text-white">
+                        <span>{threat.username?.toUpperCase()}</span>
+                        <span className="text-[#00F0FF]">
+                          {threat.elo_rating} ELO
+                        </span>
+                      </div>
+                      <div className="h-0.5 bg-surface-container-low mt-1">
+                        <div
+                          className="h-full bg-tertiary-container shadow-[0_0_5px_rgba(255,206,204,0.5)]"
+                          style={{
+                            width: `${Math.min((threat.elo_rating / 3000) * 100, 100)}%`,
+                          }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-[8px] font-headline text-[#B3B7CF]/40 uppercase">
+                  SCANNING_FOR_THREAT_SIGNATURES...
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

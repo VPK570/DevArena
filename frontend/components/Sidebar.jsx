@@ -2,9 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  LayoutDashboard,
+  Sword,
+  Trophy,
+  Video,
+  FileText,
+  Terminal,
+  XCircle,
+  User,
+} from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { profile, isAuthenticated } = useAuth();
   const isActive = (path) => pathname === path;
 
   return (
@@ -12,24 +24,37 @@ export default function Sidebar() {
       <div className="mb-8 p-2">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 bg-surface-container-highest border border-[#00F0FF]/30 flex items-center justify-center overflow-hidden">
-            <img
-              alt="OPERATOR_01"
-              className="w-10 h-10 object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0Q7gUidvCMDS97EqRVd-yqBDjNiMCggfm05CnRPwaiu8YokLynu4kBAPWMs2Axr8dQiG8W9i2oLA_6dybSiV8uaJ1sQ1x41_dOzPvZpowG1a3ZFDzVuZDbKHS9icvvKDGnkkHQOnaxoooRkpS_nBHqJEPhfRzye9r-H0bUtIKcprDKjc1SXnFCjMRayzRx_plrn1Undo7OTYn6qMJD2A1vgzURTtmbhurJkC4jModdWXr9D-ilALYJMRy6p6l529W94Ux1c6gLWQG"
-            />
+            {isAuthenticated && profile?.avatar_url ? (
+              <img
+                alt={profile.username}
+                className="w-10 h-10 object-cover"
+                src={profile.avatar_url}
+              />
+            ) : (
+              <User className="w-6 h-6 text-[#00F0FF]" />
+            )}
           </div>
           <div>
             <div className="font-headline text-xs text-[#00F0FF] tracking-tight uppercase">
-              OPERATOR_01
+              {isAuthenticated ? profile?.username : "GUEST_USER"}
             </div>
             <div className="font-body text-[10px] text-[#B3B7CF]">
-              RANK: ELITE_SQUAD
+              {isAuthenticated ? (
+                <>ELO: {profile?.elo_rating || "----"}</>
+              ) : (
+                "RANK: UNKNOWN"
+              )}
             </div>
           </div>
         </div>
-        <button className="w-full bg-[#00F0FF] text-[#131316] font-bold py-2 text-xs font-headline tracking-widest hover:brightness-110 transition-all uppercase">
-          EXECUTE_ROUTINE
-        </button>
+        {!isAuthenticated && (
+          <Link
+            href="/login"
+            className="w-full bg-[#00F0FF] text-[#131316] font-bold py-2 text-xs font-headline tracking-widest hover:brightness-110 transition-all uppercase block text-center"
+          >
+            AUTHENTICATE
+          </Link>
+        )}
       </div>
       <nav className="flex-1 space-y-1">
         <Link
@@ -40,7 +65,7 @@ export default function Sidebar() {
               : "text-[#B3B7CF] hover:text-[#00F0FF] hover:bg-[#00F0FF]/5"
           }`}
         >
-          <span className="material-symbols-outlined text-sm">grid_view</span>
+          <LayoutDashboard className="w-4 h-4" />
           <span className="font-headline text-[0.75rem] tracking-widest uppercase">
             DASHBOARD
           </span>
@@ -53,25 +78,25 @@ export default function Sidebar() {
               : "text-[#B3B7CF] hover:text-[#00F0FF] hover:bg-[#00F0FF]/5"
           }`}
         >
-          <span className="material-symbols-outlined text-sm">rebase_edit</span>
+          <Sword className="w-4 h-4" />
           <span className="font-headline text-[0.75rem] tracking-widest uppercase">
             CHALLENGES
           </span>
         </Link>
         <div className="flex items-center gap-3 p-2 text-[#outline-variant] cursor-not-allowed opacity-50">
-          <span className="material-symbols-outlined text-sm">leaderboard</span>
+          <Trophy className="w-4 h-4" />
           <span className="font-headline text-[0.75rem] tracking-widest uppercase">
             RANKINGS (LOCKED)
           </span>
         </div>
         <div className="flex items-center gap-3 p-2 text-[#outline-variant] cursor-not-allowed opacity-50">
-          <span className="material-symbols-outlined text-sm">videocam</span>
+          <Video className="w-4 h-4" />
           <span className="font-headline text-[0.75rem] tracking-widest uppercase">
             STREAMS (LOCKED)
           </span>
         </div>
         <div className="flex items-center gap-3 p-2 text-[#outline-variant] cursor-not-allowed opacity-50">
-          <span className="material-symbols-outlined text-sm">description</span>
+          <FileText className="w-4 h-4" />
           <span className="font-headline text-[0.75rem] tracking-widest uppercase">
             SYSTEM_LOG (LOCKED)
           </span>
@@ -82,7 +107,7 @@ export default function Sidebar() {
           className="flex items-center gap-3 text-[#B3B7CF] hover:text-[#00F0FF] p-2"
           href="#"
         >
-          <span className="material-symbols-outlined text-sm">code</span>
+          <Terminal className="w-4 h-4" />
           <span className="font-headline text-[0.75rem] uppercase">
             TERMINAL_OUT
           </span>
@@ -91,7 +116,7 @@ export default function Sidebar() {
           className="flex items-center gap-3 text-error-container hover:text-error p-2"
           href="#"
         >
-          <span className="material-symbols-outlined text-sm">cancel</span>
+          <XCircle className="w-4 h-4" />
           <span className="font-headline text-[0.75rem] uppercase">ABORT</span>
         </a>
       </div>

@@ -1,6 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import {
+  TrendingUp,
+  TrendingDown,
+  RotateCcw,
+  LogOut,
+  Code,
+  BrainCircuit,
+  AlertCircle,
+} from "lucide-react";
 
 export default function FeedbackPanel({
   feedbackData,
@@ -104,11 +113,11 @@ export default function FeedbackPanel({
                   className={`text-xl font-bold ${themeColor} flex items-center gap-2`}
                 >
                   {eloDelta}
-                  <span className="material-symbols-outlined text-sm">
-                    {feedbackData?.eloChange >= 0
-                      ? "trending_up"
-                      : "trending_down"}
-                  </span>
+                  {feedbackData?.eloChange >= 0 ? (
+                    <TrendingUp className="w-4 h-4" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4" />
+                  )}
                 </div>
               </div>
               <div className={`border-l-2 ${borderColor} pl-4`}>
@@ -127,16 +136,14 @@ export default function FeedbackPanel({
               onClick={onTryAgain}
               className={`${bgColor} text-[#131316] font-headline font-bold px-6 py-3 flex items-center justify-center gap-3 hover:brightness-110 active:scale-95 transition-all text-xs`}
             >
-              <span className="material-symbols-outlined text-sm">
-                restart_alt
-              </span>
+              <RotateCcw className="w-4 h-4" />
               REMATCH
             </button>
             <Link
               href="/"
               className={`bg-[#131316] border ${borderColor}/50 ${themeColor} font-headline font-bold px-6 py-3 flex items-center justify-center gap-3 hover:bg-[#00F0FF]/10 active:scale-95 transition-all text-xs`}
             >
-              <span className="material-symbols-outlined text-sm">logout</span>
+              <LogOut className="w-4 h-4" />
               RETURN_TO_BASE
             </Link>
             {challengeId && feedbackData?.submissionId && (
@@ -144,7 +151,7 @@ export default function FeedbackPanel({
                 href={`/solution/${challengeId}?subId=${feedbackData.submissionId}`}
                 className={`bg-purple-500/20 border border-purple-500/50 text-purple-400 font-headline font-bold px-6 py-3 flex items-center justify-center gap-3 hover:bg-purple-500/30 active:scale-95 transition-all text-xs`}
               >
-                <span className="material-symbols-outlined text-sm">code</span>
+                <Code className="w-4 h-4" />
                 VIEW_SOLUTION
               </Link>
             )}
@@ -155,11 +162,7 @@ export default function FeedbackPanel({
         <div className="bg-[#131316] flex flex-col border-l border-[#00F0FF]/15">
           <div className="p-4 border-b border-[#00F0FF]/15 flex justify-between items-center bg-[#1c1b1e]">
             <div className="flex items-center gap-3">
-              <span
-                className={`material-symbols-outlined text-sm ${themeColor}`}
-              >
-                psychology
-              </span>
+              <BrainCircuit className={`w-4 h-4 ${themeColor}`} />
               <h2 className="font-headline text-[10px] tracking-widest text-[#e5e1e5] uppercase">
                 ORACLE_ANALYSIS_V4.2
               </h2>
@@ -188,11 +191,7 @@ export default function FeedbackPanel({
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span
-                            className={`material-symbols-outlined text-xs ${themeColor}`}
-                          >
-                            error
-                          </span>
+                          <AlertCircle className={`w-3 h-3 ${themeColor}`} />
                           <span
                             className={`text-[10px] uppercase font-bold ${themeColor}`}
                           >

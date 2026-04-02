@@ -55,10 +55,11 @@ Say goodbye to server-side bottlenecks for simple code preview. DevArena runs th
 * **Real-Time Terminal Interception**: Standard browser behavior swallows iframe logs. We injected a custom intercept sub-routine that hijacks `console.log`, `console.warn`, and `window.onerror` directly from the `srcdoc` execution context and pipes them back to our Parent React App.
 * **Visual Output & Logs**: Split-pane sandbox showing the rendered graphical output of the user's React code on the left, and a scrolling `TERMINAL_OUT` log on the right.
 
-### 🤖 2. The AI "Oracle" (Gemini 2.0 Flash)
-We rejected basic string-matching unit tests. DevArena uses Google's latest **Gemini 2.0 Flash** model as the ultimate subjective and objective judge. 
+### 🤖 2. The AI "Oracle" (Gemini 3.1 Pro via OpenRouter)
+We rejected basic string-matching unit tests. DevArena uses the latest **Gemini 3.1 Pro** model as the ultimate subjective and objective judge. 
 * **Dynamic Grading**: Determines a `Score (0-100)`, a `Verdict (Pass/Partial/Fail)`, and explains *why* the code failed.
 * **Line-by-Line Diagnostics**: The Oracle points out exact line numbers containing logic errors and syntax flaws, which we render natively inside the Feedback interface.
+* **Solution Comparison**: After submission, users can "JACK IN" to the Oracle's optimized solution, featuring a side-by-side comparison and an architectural debrief.
 * **Difficulty Scaling**: The internal python engine automatically applies weighting so that solving a "Hard" problem poorly still results in more core ELO points than solving an "Easy" problem perfectly.
 
 ### 🛡️ 3. Fault-Tolerant AI Graceful Degradation
@@ -146,6 +147,7 @@ The backend manages code evaluation via Gemini and enforces secure data access.
     ```bash
     uvicorn main:app --reload --port 8000
     ```
+    *Note: The system is optimized to connect via `127.0.0.1:8000` to ensure stable IPv4 routing on Windows.*
 
 ### 🖥️ 3. FRONTEND_SYNC (Next.js 15+ App Router)
 The frontend is built with high-fidelity components and aggressive styling.

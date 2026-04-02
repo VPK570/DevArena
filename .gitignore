@@ -39,7 +39,6 @@ db.sqlite3
 .env.test.local
 .env.production.local
 *.env
-backend/.env.example
 backend/.env
 frontend/.env
 frontend/.env.local
@@ -64,3 +63,5 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+AGENTS.md

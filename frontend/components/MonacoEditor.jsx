@@ -18,7 +18,7 @@ export default function MonacoEditor({ value, onChange }) {
       <Editor
         height="100%"
         language="javascript"
-        theme="vs-dark"
+        theme="cyberpunk"
         value={value}
         onChange={onChange}
         options={{

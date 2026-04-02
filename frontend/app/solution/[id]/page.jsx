@@ -5,6 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import MonacoEditor from "@/components/MonacoEditor";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  AlertCircle,
+  ArrowLeft,
+  User,
+  BrainCircuit,
+  Sparkles,
+} from "lucide-react";
 
 export default function SolutionPage({ params }) {
   const { id: challengeId } = use(params);
@@ -80,9 +87,7 @@ export default function SolutionPage({ params }) {
   if (error) {
     return (
       <div className="lg:ml-64 pt-14 h-screen bg-[#131316] flex flex-col items-center justify-center gap-4">
-        <span className="material-symbols-outlined text-error text-6xl">
-          error
-        </span>
+        <AlertCircle className="w-16 h-16 text-error" />
         <h2 className="text-error font-headline font-bold text-2xl uppercase">
           Error Loading Data
         </h2>
@@ -113,7 +118,7 @@ export default function SolutionPage({ params }) {
           href={`/challenge/${challengeId}`}
           className="px-6 py-2 border border-outline-variant text-outline font-headline text-[10px] font-bold tracking-widest hover:border-primary-container hover:text-primary-container transition-all uppercase flex items-center gap-2"
         >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>
+          <ArrowLeft className="w-4 h-4" />
           Return_to_Arena
         </Link>
       </header>
@@ -123,9 +128,7 @@ export default function SolutionPage({ params }) {
         {/* Left Pane: User Code */}
         <section className="w-full md:w-1/2 flex flex-col border-b md:border-b-0 md:border-r border-outline-variant/20 bg-surface h-1/2 md:h-full">
           <div className="h-10 bg-surface-container-highest border-b border-outline-variant/20 flex items-center px-4 shrink-0">
-            <span className="material-symbols-outlined text-primary-container text-sm mr-2">
-              person
-            </span>
+            <User className="w-4 h-4 text-primary-container mr-2" />
             <span className="font-label text-[10px] text-white tracking-widest uppercase">
               Your_Submission
             </span>
@@ -138,9 +141,7 @@ export default function SolutionPage({ params }) {
         {/* Right Pane: AI Solution Code */}
         <section className="w-full md:w-1/2 flex flex-col bg-surface h-1/2 md:h-full relative">
           <div className="h-10 bg-purple-900/10 border-b border-purple-500/20 flex items-center px-4 shrink-0">
-            <span className="material-symbols-outlined text-purple-500 text-sm mr-2">
-              psychology
-            </span>
+            <BrainCircuit className="w-4 h-4 text-purple-500 mr-2" />
             <span className="font-label text-[10px] text-purple-400 tracking-widest uppercase">
               Oracle_Solution
             </span>
@@ -156,15 +157,18 @@ export default function SolutionPage({ params }) {
         <div className="w-full p-6 text-sm font-body text-on-surface-variant flex flex-col md:flex-row gap-8">
           {/* Explanation */}
           <div className="flex-1">
-            <h3 className="text-purple-400 font-headline uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-base">
-                auto_awesome
-              </span>
-              Architecture Breakdown
+            <h3 className="text-purple-400 font-headline uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+              <Sparkles className="w-5 h-5 animate-pulse" />
+              SYSTEM_ARCHITECTURE_DEBRIEF
             </h3>
-            <div className="prose prose-invert prose-sm xl:prose-base max-w-none text-[#B3B7CF]">
-              {solution?.explanation?.split("\n").map((line, idx) => (
-                <p key={idx}>{line}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {solution?.explanation?.split("\n").filter(line => line.trim()).map((line, idx) => (
+                <div key={idx} className="bg-surface-container-low border-l-2 border-purple-500/30 p-4 hover:border-purple-500 transition-colors">
+                  <div className="text-[10px] text-purple-400 opacity-50 mb-1 font-headline tracking-widest uppercase">NODE_{String(idx + 1).padStart(2, "0")}</div>
+                  <p className="text-xs text-[#B3B7CF] leading-relaxed">
+                    {line.replace(/^-\s*/, "")}
+                  </p>
+                </div>
               ))}
             </div>
           </div>

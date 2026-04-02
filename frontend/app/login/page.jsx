@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Terminal, Network } from "lucide-react";
 
 export default function LoginPage() {
   const { signInWithGitHub, signInWithGoogle, isAuthenticated, loading } =
@@ -64,9 +65,7 @@ export default function LoginPage() {
             >
               <div className="absolute left-0 top-0 w-1 h-full bg-[#00F0FF] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
               <div className="flex items-center gap-4">
-                <span className="material-symbols-outlined text-2xl text-[#00F0FF]">
-                  terminal
-                </span>
+                <Terminal className="w-6 h-6 text-[#00F0FF]" />
                 <span className="text-[11px] text-white font-headline tracking-widest uppercase">
                   SSH_AUTH_GITHUB
                 </span>
@@ -83,9 +82,7 @@ export default function LoginPage() {
             >
               <div className="absolute left-0 top-0 w-1 h-full bg-[#00F0FF]/50 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
               <div className="flex items-center gap-4">
-                <span className="material-symbols-outlined text-2xl text-[#B3B7CF]">
-                  hub
-                </span>
+                <Network className="w-6 h-6 text-[#B3B7CF]" />
                 <span className="text-[11px] text-white font-headline tracking-widest uppercase">
                   OAUTH_GOOGLE
                 </span>

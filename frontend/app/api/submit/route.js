@@ -32,7 +32,7 @@ export async function POST(request) {
     }
 
     // 2. Call FastAPI for AI evaluation
-    const fastapiUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/evaluate`;
+    const fastapiUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/evaluate`;
     const evalResponse = await fetch(fastapiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

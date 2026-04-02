@@ -12,6 +12,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import AIPanel from "@/components/AIPanel";
+import {
+  Code,
+  XCircle,
+  Terminal,
+  BrainCircuit,
+  Zap,
+  LineChart,
+  Square,
+} from "lucide-react";
 
 export default function ChallengePage({ params }) {
   const { id } = use(params);
@@ -225,7 +234,7 @@ export default function ChallengePage({ params }) {
     setAiPanel({ open: true, loading: true, content: null, type: "hint" });
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hint`, {
+      const res = await fetch("/api/hint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -263,9 +272,7 @@ export default function ChallengePage({ params }) {
     setAiPanel({ open: true, loading: true, content: null, type: "explain" });
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/explain`,
-        {
+      const res = await fetch("/api/explain", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -436,9 +443,7 @@ export default function ChallengePage({ params }) {
               <div className="absolute inset-4 border-[1px] border-tertiary-container/30 rounded-full animate-reverse-spin [animation-duration:6s]"></div>
               <div className="relative w-32 h-32 bg-primary-container/5 backdrop-blur-xl border border-primary-container/40 flex items-center justify-center">
                 <div className="text-primary-container drop-shadow-[0_0_15px_rgba(0,240,255,0.8)] flex flex-col items-center">
-                  <span className="material-symbols-outlined text-4xl animate-pulse">
-                    deployed_code
-                  </span>
+                  <Code className="w-8 h-8 animate-pulse text-primary-container" />
                   <p className="font-headline text-[0.5rem] mt-2 tracking-[0.2em]">
                     JUDGING
                   </p>
@@ -466,9 +471,7 @@ export default function ChallengePage({ params }) {
                   onClick={handleAbort}
                   className="text-[9px] font-label text-error hover:text-error-container uppercase transition-colors mr-4 flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-[10px]">
-                    cancel
-                  </span>{" "}
+                  <XCircle className="w-4 h-4" />
                   ABORT
                 </button>
                 <button
@@ -488,9 +491,7 @@ export default function ChallengePage({ params }) {
             {/* Action Bar */}
             <div className="h-14 bg-surface-container-lowest border-t border-outline-variant/20 flex items-center justify-between px-6 shrink-0 relative">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[10px] text-primary-container">
-                  terminal
-                </span>
+                <Terminal className="w-4 h-4 text-primary-container" />
                 <span className="font-label text-[10px] text-outline uppercase tracking-widest">
                   {error || "Sandbox_Idle"}
                 </span>
@@ -502,18 +503,14 @@ export default function ChallengePage({ params }) {
                   disabled={hintsRemaining <= 0}
                   className="px-4 py-2 border border-purple-500/50 text-purple-400 font-headline text-[10px] tracking-widest hover:border-purple-400 hover:bg-purple-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all uppercase flex items-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-xs">
-                    psychology
-                  </span>
+                  <BrainCircuit className="w-4 h-4" />
                   HINT [{hintsRemaining}/3]
                 </button>
                 <button
                   onClick={handleExplainCode}
                   className="px-4 py-2 border border-amber-500/50 text-amber-400 font-headline text-[10px] tracking-widest hover:border-amber-400 hover:bg-amber-500/10 transition-all uppercase flex items-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-xs">
-                    bolt
-                  </span>
+                  <Zap className="w-4 h-4" />
                   EXPLAIN
                 </button>
                 <button
@@ -546,9 +543,7 @@ export default function ChallengePage({ params }) {
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center opacity-20">
-                    <span className="material-symbols-outlined text-4xl mb-2">
-                      analytics
-                    </span>
+                    <LineChart className="w-8 h-8 mb-2" />
                     <p className="font-label text-[10px] tracking-widest uppercase">
                       Sandbox_Offline
                     </p>
@@ -596,9 +591,7 @@ export default function ChallengePage({ params }) {
                 key={i}
                 className="aspect-square border border-outline-variant/30 flex items-center justify-center bg-surface"
               >
-                <span className="material-symbols-outlined text-[10px]">
-                  square
-                </span>
+                <Square className="w-4 h-4" />
               </div>
             ))}
           </div>
